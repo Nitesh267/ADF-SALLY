@@ -1,0 +1,70 @@
+{
+	"name": "XStores_Mapping_Dataflow",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Input_Dataset_Xstores_Dynamic_File",
+						"type": "DatasetReference"
+					},
+					"name": "source1"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "Output_Dataset_Xstores",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "unpivot1"
+				},
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Banner as string,",
+				"          Business_date as string,",
+				"          SALE_RECORD_COUNT as string,",
+				"          RETURN_RECORD_COUNT as string,",
+				"          IA_CC_RECORD_COUNT as string,",
+				"          STS_SHP_RECORD_COUNT as string,",
+				"          STS_RCV_RECORD_COUNT as string,",
+				"          DSC_2_STORE_ASN_ACK_RECORD_COUNT as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> source1",
+				"source1 unpivot(output(",
+				"          {Transaction Type} as string,",
+				"          {Record Count} as string",
+				"     ),",
+				"     ungroupBy(Banner,",
+				"          Business_date),",
+				"     lateral: true,",
+				"     ignoreNullPivots: false) ~> unpivot1",
+				"unpivot1 derive({Transaction Type ID} = iif( or( ({Transaction Type}==\"SALE_RECORD_COUNT\"), ({Transaction Type}==\"RETURN_RECORD_COUNT\")) ,2, iif(({Transaction Type}==\"IA_CC_RECORD_COUNT\")\r",
+				", 1,  iif(({Transaction Type}==\"DSC_2_STORE_ASN_ACK_RECORD_COUNT\")  , 3, 4)   ) ),",
+				"          AGG_ID = 22,",
+				"          SALES_RCORD_COUNT = iif( ({Transaction Type}==\"SALE_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+				"          RETURN_RECORD_COUNT = iif( ({Transaction Type}==\"RETURN_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+				"          IA_CC_RECORD_COUNT = iif( ({Transaction Type}==\"IA_CC_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+				"          STS_SHP_RECORD_COUNT = iif( ({Transaction Type}==\"STS_SHP_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+				"          STS_RCV_RECORD_COUNT = iif( ({Transaction Type}==\"STS_RCV_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+				"          DSC_2_STORE_ASN_ACK_RECORD_COUNT = iif( ({Transaction Type}==\"DSC_2_STORE_ASN_ACK_RECORD_COUNT\" ),{Record Count}, toString(null()))) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

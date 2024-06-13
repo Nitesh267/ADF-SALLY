@@ -1,0 +1,55 @@
+{
+	"name": "Input_Dataset_Xstores",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorage1",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"container": "xstoresinput"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Banner?",
+				"type": "String"
+			},
+			{
+				"name": "Business_date?",
+				"type": "String"
+			},
+			{
+				"name": "SALE_RECORD_COUNT?",
+				"type": "String"
+			},
+			{
+				"name": "RETURN_RECORD_COUNT?",
+				"type": "String"
+			},
+			{
+				"name": "IA_CC_RECORD_COUNT?",
+				"type": "String"
+			},
+			{
+				"name": "STS_SHP_RECORD_COUNT?",
+				"type": "String"
+			},
+			{
+				"name": "STS_RCV_RECORD_COUNT?",
+				"type": "String"
+			},
+			{
+				"name": "DSC_2_STORE_ASN_ACK_RECORD_COUNT?",
+				"type": "String"
+			}
+		]
+	}
+}
