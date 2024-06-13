@@ -6,6 +6,10 @@
 			"type": "string",
 			"metadata": "Data Factory name",
 			"defaultValue": "newtest8099"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
 		}
 	},
 	"variables": {
@@ -44,6 +48,766 @@
 				"annotations": []
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Input_Dataset_Dynamic_File')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().Filename",
+							"type": "Expression"
+						},
+						"container": "testaccount"
+					},
+					"columnDelimiter": ",",
+					"rowDelimiter": "\n",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": null
+				},
+				"schema": [
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Input_Dataset_Folder')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "testaccount"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Input_Dataset_Xstores')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "xstoresinput"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Banner?",
+						"type": "String"
+					},
+					{
+						"name": "Business_date?",
+						"type": "String"
+					},
+					{
+						"name": "SALE_RECORD_COUNT?",
+						"type": "String"
+					},
+					{
+						"name": "RETURN_RECORD_COUNT?",
+						"type": "String"
+					},
+					{
+						"name": "IA_CC_RECORD_COUNT?",
+						"type": "String"
+					},
+					{
+						"name": "STS_SHP_RECORD_COUNT?",
+						"type": "String"
+					},
+					{
+						"name": "STS_RCV_RECORD_COUNT?",
+						"type": "String"
+					},
+					{
+						"name": "DSC_2_STORE_ASN_ACK_RECORD_COUNT?",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Input_Dataset_Xstores_Dynamic_File')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Filename": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": {
+							"value": "@dataset().Filename",
+							"type": "Expression"
+						},
+						"container": "xstoresinput"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Banner",
+						"type": "String"
+					},
+					{
+						"name": "Business_date",
+						"type": "String"
+					},
+					{
+						"name": "SALE_RECORD_COUNT",
+						"type": "String"
+					},
+					{
+						"name": "RETURN_RECORD_COUNT",
+						"type": "String"
+					},
+					{
+						"name": "IA_CC_RECORD_COUNT",
+						"type": "String"
+					},
+					{
+						"name": "STS_SHP_RECORD_COUNT",
+						"type": "String"
+					},
+					{
+						"name": "STS_RCV_RECORD_COUNT",
+						"type": "String"
+					},
+					{
+						"name": "DSC_2_STORE_ASN_ACK_RECORD_COUNT",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Output_Dataset')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "out.csv",
+						"folderPath": "output",
+						"container": "output"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Output_Dataset_Xstores')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureBlobStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "output.csv",
+						"folderPath": "output",
+						"container": "xstoresoutput"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureBlobStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Read_Line_Dataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Input_Dataset_Dynamic_File",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Output_Dataset",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     FileNameForDF as string,",
+						"     FileTypeForDF as string,",
+						"     FileDateForDF as string",
+						"}",
+						"source(output(",
+						"          Column_1 as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     limit: 1,",
+						"     ignoreNoFilesFound: false,",
+						"     skipLines: 142) ~> source1",
+						"source1 derive(Column_1 = replace(Column_1,' Rows successfully loaded.',''),",
+						"          {File Name} = $FileNameForDF,",
+						"          {File Type} = $FileTypeForDF,",
+						"          {File Date} = $FileDateForDF) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Input_Dataset_Dynamic_File')]",
+				"[concat(variables('factoryId'), '/datasets/Output_Dataset')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/XStores_Mapping_Dataflow')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "Input_Dataset_Xstores_Dynamic_File",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "Output_Dataset_Xstores",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "unpivot1"
+						},
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Banner as string,",
+						"          Business_date as string,",
+						"          SALE_RECORD_COUNT as string,",
+						"          RETURN_RECORD_COUNT as string,",
+						"          IA_CC_RECORD_COUNT as string,",
+						"          STS_SHP_RECORD_COUNT as string,",
+						"          STS_RCV_RECORD_COUNT as string,",
+						"          DSC_2_STORE_ASN_ACK_RECORD_COUNT as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 unpivot(output(",
+						"          {Transaction Type} as string,",
+						"          {Record Count} as string",
+						"     ),",
+						"     ungroupBy(Banner,",
+						"          Business_date),",
+						"     lateral: true,",
+						"     ignoreNullPivots: false) ~> unpivot1",
+						"unpivot1 derive({Transaction Type ID} = iif( or( ({Transaction Type}==\"SALE_RECORD_COUNT\"), ({Transaction Type}==\"RETURN_RECORD_COUNT\")) ,2, iif(({Transaction Type}==\"IA_CC_RECORD_COUNT\")\r",
+						", 1,  iif(({Transaction Type}==\"DSC_2_STORE_ASN_ACK_RECORD_COUNT\")  , 3, 4)   ) ),",
+						"          AGG_ID = 22,",
+						"          SALES_RCORD_COUNT = iif( ({Transaction Type}==\"SALE_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+						"          RETURN_RECORD_COUNT = iif( ({Transaction Type}==\"RETURN_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+						"          IA_CC_RECORD_COUNT = iif( ({Transaction Type}==\"IA_CC_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+						"          STS_SHP_RECORD_COUNT = iif( ({Transaction Type}==\"STS_SHP_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+						"          STS_RCV_RECORD_COUNT = iif( ({Transaction Type}==\"STS_RCV_RECORD_COUNT\" ),{Record Count}, toString(null())),",
+						"          DSC_2_STORE_ASN_ACK_RECORD_COUNT = iif( ({Transaction Type}==\"DSC_2_STORE_ASN_ACK_RECORD_COUNT\" ),{Record Count}, toString(null()))) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Input_Dataset_Xstores_Dynamic_File')]",
+				"[concat(variables('factoryId'), '/datasets/Output_Dataset_Xstores')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Populate Transaction Details')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get All File Details",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "Input_Dataset_Folder",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "ForEachFile",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get All File Details",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get All File Details').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "File Name",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "File_name_var",
+										"value": {
+											"value": "@item().Name",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "File Date",
+									"type": "SetVariable",
+									"dependsOn": [
+										{
+											"activity": "File Name",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "File_date_var",
+										"value": {
+											"value": "@substring(item().Name, 9,8)",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "File Type Check",
+									"type": "Switch",
+									"dependsOn": [
+										{
+											"activity": "File Date",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"userProperties": [],
+									"typeProperties": {
+										"on": {
+											"value": "@concat(substring(item().Name,0,8),substring(item().Name,27,2) )",
+											"type": "Expression"
+										},
+										"cases": [
+											{
+												"value": "INVTRNEEMA",
+												"activities": [
+													{
+														"name": "File Type Variable",
+														"type": "SetVariable",
+														"dependsOn": [],
+														"policy": {
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [],
+														"typeProperties": {
+															"variableName": "File_type_var",
+															"value": "Manhattan Cycles count"
+														}
+													},
+													{
+														"name": "Read_Line_Dataflow",
+														"type": "ExecuteDataFlow",
+														"dependsOn": [
+															{
+																"activity": "File Type Variable",
+																"dependencyConditions": [
+																	"Succeeded"
+																]
+															}
+														],
+														"policy": {
+															"timeout": "0.12:00:00",
+															"retry": 0,
+															"retryIntervalInSeconds": 30,
+															"secureOutput": false,
+															"secureInput": false
+														},
+														"userProperties": [],
+														"typeProperties": {
+															"dataflow": {
+																"referenceName": "Read_Line_Dataflow",
+																"type": "DataFlowReference",
+																"parameters": {
+																	"FileNameForDF": {
+																		"value": "'@{variables('File_name_var')}'",
+																		"type": "Expression"
+																	},
+																	"FileTypeForDF": {
+																		"value": "'@{variables('File_type_var')}'",
+																		"type": "Expression"
+																	},
+																	"FileDateForDF": {
+																		"value": "'@{variables('File_date_var')}'",
+																		"type": "Expression"
+																	}
+																},
+																"datasetParameters": {
+																	"source1": {
+																		"Filename": {
+																			"value": "@variables('File_name_var')",
+																			"type": "Expression"
+																		}
+																	},
+																	"sink1": {}
+																}
+															},
+															"staging": {},
+															"compute": {
+																"coreCount": 8,
+																"computeType": "General"
+															},
+															"traceLevel": "Fine"
+														}
+													}
+												]
+											}
+										]
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"File_name_var": {
+						"type": "String"
+					},
+					"File_date_var": {
+						"type": "String"
+					},
+					"File_type_var": {
+						"type": "String"
+					},
+					"Record_count_var": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-06-04T09:16:29Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Input_Dataset_Folder')]",
+				"[concat(variables('factoryId'), '/dataflows/Read_Line_Dataflow')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Process XStores')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Get File Details",
+						"type": "GetMetadata",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataset": {
+								"referenceName": "Input_Dataset_Xstores",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"fieldList": [
+								"childItems"
+							],
+							"storeSettings": {
+								"type": "AzureBlobStorageReadSettings",
+								"recursive": true,
+								"enablePartitionDiscovery": false
+							},
+							"formatSettings": {
+								"type": "DelimitedTextReadSettings"
+							}
+						}
+					},
+					{
+						"name": "ForEachFile",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Get File Details",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Get File Details').output.childItems",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "File Name_Det",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "Filename_var_xstr",
+										"value": {
+											"value": "@item().Name",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Xtores_Dataflow",
+									"type": "ExecuteDataFlow",
+									"dependsOn": [
+										{
+											"activity": "File Name_Det",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"dataflow": {
+											"referenceName": "XStores_Mapping_Dataflow",
+											"type": "DataFlowReference",
+											"parameters": {},
+											"datasetParameters": {
+												"source1": {
+													"Filename": {
+														"value": "@variables('Filename_var_xstr')",
+														"type": "Expression"
+													}
+												},
+												"sink1": {}
+											}
+										},
+										"staging": {},
+										"compute": {
+											"coreCount": 8,
+											"computeType": "General"
+										},
+										"traceLevel": "Fine"
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"Filename_var_xstr": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-06-04T10:35:14Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/Input_Dataset_Xstores')]",
+				"[concat(variables('factoryId'), '/dataflows/XStores_Mapping_Dataflow')]"
+			]
 		}
 	]
 }

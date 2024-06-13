@@ -5,6 +5,9 @@
 		"factoryName": {
 			"value": "newtest8099"
 		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
 		"containerUri": {
 			"value": ""
 		},
