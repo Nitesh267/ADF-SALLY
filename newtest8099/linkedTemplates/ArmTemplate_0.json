@@ -808,6 +808,44 @@
 				"[concat(variables('factoryId'), '/datasets/Input_Dataset_Xstores')]",
 				"[concat(variables('factoryId'), '/dataflows/XStores_Mapping_Dataflow')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/TR_SCH_DAILY')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "Populate Transaction Details",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2024-06-18T03:51:00",
+						"timeZone": "Pacific Standard Time",
+						"schedule": {
+							"minutes": [
+								0
+							],
+							"hours": [
+								17
+							]
+						}
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/Populate Transaction Details')]"
+			]
 		}
 	]
 }
