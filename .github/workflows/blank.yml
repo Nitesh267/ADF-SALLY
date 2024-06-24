@@ -1,50 +1,83 @@
-# This is a basic workflow to help you get started with Actions
+name: Deploy Azure Data Factory
 
-name: CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
-  # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
-
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  build:
-    # The type of runner that the job will run on
+  deploy:
     runs-on: ubuntu-latest
 
-    # Steps represent a sequence of tasks that will be executed as part of the job
+    env:
+      AZURE_RESOURCE_GROUP: your-resource-group-name
+      AZURE_DATA_FACTORY_NAME: your-data-factory-name
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-      # Runs a single command using the runners shell
-      - name: Run a one-line script
-        run: echo Hello, world!
+    - name: Set up Azure CLI
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      # Runs a set of commands using the runners shell
-      - name: Run a multi-line script
-        run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
-            - name: install-databricks-cli
-  uses: microsoft/install-databricks-cli@v1.0.0
-            - name: databricks-import-directory
-  uses: microsoft/databricks-import-notebook@v1.0.0
-  with:
-    # Databricks host
-    databricks-host: 
-    # Databricks token
-    databricks-token: # optional
-    # LOCAL_NOTEBOOKS_PATH
-    local-path: 
-    # REMOTE_NOTEBOOK_PATH
-    remote-path: 
-          
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: Install Azure CLI
+      run: |
+        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+    - name: Authenticate with Azure
+      run: |
+        az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+      env:
+        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    - name: Set Azure subscription
+      run: az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+    - name: Deploy Data Factory Dataflows
+      run: |
+        for file in ADF-SALLY/dataflows/*.json; do
+          dataflow_name=$(basename "$file" .json)
+          echo "Deploying dataflow $dataflow_name from $file"
+          az datafactory data-flow create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$dataflow_name" --data-flow "@$file"
+        done
+
+    - name: Deploy Data Factory Datasets
+      run: |
+        for file in ADF-SALLY/datasets/*.json; do
+          dataset_name=$(basename "$file" .json)
+          echo "Deploying dataset $dataset_name from $file"
+          az datafactory dataset create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$dataset_name" --dataset "@$file"
+        done
+
+    - name: Deploy Data Factory Linked Services
+      run: |
+        for file in ADF-SALLY/linkedservices/*.json; do
+          linkedservice_name=$(basename "$file" .json)
+          echo "Deploying linked service $linkedservice_name from $file"
+          az datafactory linked-service create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$linkedservice_name" --linked-service "@$file"
+        done
+
+    - name: Deploy Data Factory Pipelines
+      run: |
+        for file in ADF-SALLY/pipelines/*.json; do
+          pipeline_name=$(basename "$file" .json)
+          echo "Deploying pipeline $pipeline_name from $file"
+          az datafactory pipeline create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$pipeline_name" --pipeline "@$file"
+        done
+
+    - name: Deploy Data Factory Triggers
+      run: |
+        for file in ADF-SALLY/triggers/*.json; do
+          trigger_name=$(basename "$file" .json)
+          echo "Deploying trigger $trigger_name from $file"
+          az datafactory trigger create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$trigger_name" --trigger "@$file"
+        done
