@@ -3,24 +3,24 @@ name: Deploy Azure Data Factory
 on:
   push:
     branches:
-      - main
+      - ADF
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     env:
-      AZURE_RESOURCE_GROUP: your-resource-group-name
-      AZURE_DATA_FACTORY_NAME: your-data-factory-name
+      AZURE_RESOURCE_GROUP: cw-mobile-rg
+      AZURE_DATA_FACTORY_NAME: sally-tie-out-reporting-poc
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Set up Azure CLI
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    # - name: Set up Azure CLI
+    #   uses: azure/login@v1
+    #   with:
+    #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
     - name: Set up Python
       uses: actions/setup-python@v2
