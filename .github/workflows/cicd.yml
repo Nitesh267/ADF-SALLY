@@ -50,7 +50,6 @@ jobs:
           dataflow_name=$(basename "$file" .json)
           echo "Deploying dataflow $dataflow_name from $file"
           properties_file="./dataflow/${dataflow_name}.json"
-        #   properties_file="ADF-SALLY/dataflow/${dataflow_name}_properties.json"
           az datafactory data-flow create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataflow_name" --data-flow "@$file" --properties "$properties_file" --flow-type "Flowlet"
         done
           
