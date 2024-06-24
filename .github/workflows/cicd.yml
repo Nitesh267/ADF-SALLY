@@ -48,10 +48,8 @@ jobs:
       run: |
         pwd
         ls -lrta
-        # az datafactory data-flow create -g cw-mobile-rg -f sally-tie-out-reporting-poc -n example-data-flow -t "Flowlet" --properties ./dataflow/testadf_properties.json
         for file in ADF-SALLY/dataflow/*.json; do
           dataflow_name=$(basename "$file" .json)
-          $dataflow_name
           echo "Deploying dataflow $dataflow_name from $file"
           properties_file="./dataflow/${dataflow_name}.json"
           echo "displaying  $properties_file from $file"
