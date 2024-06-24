@@ -46,9 +46,7 @@ jobs:
 
     - name: Deploy Data Factory Dataflows
       run: |
-        pwd 
-        ls -lrta
-        for file in ./dataflow/*.json; do
+        for file in ADF-SALLY/ADF-SALLY/dataflow/*.json; do
           dataflow_name=$(basename "$file" .json)
           echo "Deploying dataflow $dataflow_name from $file"
           properties_file="ADF-SALLY/dataflow/${dataflow_name}_properties.json"
