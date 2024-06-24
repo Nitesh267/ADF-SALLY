@@ -44,7 +44,7 @@ jobs:
       run: az account set --subscription 0eb16af5-8c5c-42f6-85cb-65f4f74714ce
     #   run: az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Deploy Data Factory Dataflow
+    - name: Deploy Data Factory Dataflows
       run: |
         for file in ADF-SALLY/dataflow/*.json; do
           dataflow_name=$(basename "$file" .json)
