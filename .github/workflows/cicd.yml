@@ -33,7 +33,7 @@ jobs:
 
     - name: Authenticate with Azure
       run: |
-        az login --service-principal -u f07fbbe2-9424-46af-a574-a254e78cec71 -p a2ae4eca-a40c-4a10-a806-780711b6e9e3 --tenant 0ed45c0a-a9b9-45ca-92b3-6cceb454c222
+        az login --service-principal -u f07fbbe2-9424-46af-a574-a254e78cec71 -p 6hS8Q~W9TAtIvDl~exiQGSEhgkbpYfbsKRPT5bJq --tenant 0ed45c0a-a9b9-45ca-92b3-6cceb454c222
         # az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
       env:
         AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
