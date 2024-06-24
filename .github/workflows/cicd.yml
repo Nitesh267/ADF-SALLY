@@ -60,7 +60,7 @@ jobs:
             # Construct the az datafactory command
             az datafactory data-flow create \
             -g cw-mobile-rg \
-            -f "$filename" \
+            -f sally-tie-out-reporting-poc \
             -n "$dataflow_name" \
             -t "Flowlet" \
             --properties "$filename"
