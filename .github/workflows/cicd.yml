@@ -46,15 +46,17 @@ jobs:
 
     - name: Deploy Data Factory Dataflows
       run: |
-        az datafactory data-flow create -g cw-mobile-rg -f sally-tie-out-reporting-poc -n example-data-flow -t "Flowlet" --properties ./dataflow/testadf_properties.json
-        # for file in ./dataflow/*.json; do
-        #   dataflow_name=$(basename "$file" .json)
-        #   $dataflow_name
-        #   echo "Deploying dataflow $dataflow_name from $file"
-        #   properties_file="./dataflow/${dataflow_name}.json"
-        #   $properties_file
-        #   az datafactory data-flow create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataflow_name" --data-flow "@$file" --properties "$properties_file" --flow-type "Flowlet" --allow-preview false
-        # done
+        pwd
+        ls -lrta
+        # az datafactory data-flow create -g cw-mobile-rg -f sally-tie-out-reporting-poc -n example-data-flow -t "Flowlet" --properties ./dataflow/testadf_properties.json
+        for file in ADF-SALLY/dataflow/*.json; do
+          dataflow_name=$(basename "$file" .json)
+          $dataflow_name
+          echo "Deploying dataflow $dataflow_name from $file"
+          properties_file="./dataflow/${dataflow_name}.json"
+          $properties_file
+          az datafactory data-flow create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataflow_name" --data-flow "@$file" --properties "$properties_file" --flow-type "Flowlet" --allow-preview false
+        done
           
     # - name: Deploy Data Factory Datasets
     #   run: |
