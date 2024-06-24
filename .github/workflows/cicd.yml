@@ -44,12 +44,12 @@ jobs:
       run: az account set --subscription 0eb16af5-8c5c-42f6-85cb-65f4f74714ce
     #   run: az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-    - name: Deploy Data Factory Dataflows
+    - name: Deploy Data Factory Dataflow
       run: |
-        for file in ADF-SALLY/dataflows/*.json; do
+        for file in ADF-SALLY/dataflow/*.json; do
           dataflow_name=$(basename "$file" .json)
           echo "Deploying dataflow $dataflow_name from $file"
-          properties_file="ADF-SALLY/dataflows/${dataflow_name}_properties.json"
+          properties_file="ADF-SALLY/dataflow/${dataflow_name}_properties.json"
           az datafactory data-flow create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$dataflow_name" --data-flow "@$file" --properties "$properties_file" --flow-type "Flowlet"
         done
 
