@@ -72,13 +72,13 @@ jobs:
     #       az datafactory linked-service create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$linkedservice_name" --linked-service "@$file"
     #     done
 
-    - name: Deploy Data Factory Pipelines
-      run: |
-        for file in ADF-SALLY/pipelines/*.json; do
-          pipeline_name=$(basename "$file" .json)
-          echo "Deploying pipeline $pipeline_name from $file"
-          az datafactory pipeline create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$pipeline_name" --pipeline "@$file"
-        done
+    # - name: Deploy Data Factory Pipelines
+    #   run: |
+    #     for file in ADF-SALLY/pipelines/*.json; do
+    #       pipeline_name=$(basename "$file" .json)
+    #       echo "Deploying pipeline $pipeline_name from $file"
+    #       az datafactory pipeline create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$pipeline_name" --pipeline "@$file"
+    #     done
 
     # - name: Deploy Data Factory Triggers
     #   run: |
