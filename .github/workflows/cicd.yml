@@ -48,8 +48,10 @@ jobs:
       run: |
         for file in ./dataflow/*.json; do
           dataflow_name=$(basename "$file" .json)
+          $dataflow_name
           echo "Deploying dataflow $dataflow_name from $file"
           properties_file="./dataflow/${dataflow_name}.json"
+          $properties_file
           az datafactory data-flow create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataflow_name" --data-flow "@$file" --properties "$properties_file" --flow-type "Flowlet"
         done
           
