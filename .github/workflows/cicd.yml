@@ -49,7 +49,8 @@ jobs:
         for file in ADF-SALLY/dataflows/*.json; do
           dataflow_name=$(basename "$file" .json)
           echo "Deploying dataflow $dataflow_name from $file"
-          az datafactory data-flow create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$dataflow_name" --data-flow "@$file"
+        #   az datafactory data-flow create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$dataflow_name" --data-flow "@$file"
+          az datafactory data-flow create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataflow_name" --data-flow "@$file"
         done
 
     # - name: Deploy Data Factory Datasets
