@@ -50,7 +50,6 @@ jobs:
         ls -lrta
         for file in ADF-SALLY/dataflow/*.json; do
           dataflow_name=$(basename "$file" .json)
-          ${dataflow_name}
           echo "Deploying dataflow $dataflow_name from $file"
           properties_file="ADF-SALLY/dataflow/${dataflow_name}_properties.json"
           az datafactory data-flow create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$dataflow_name" --data-flow "@$file" --properties "$properties_file" --flow-type "Flowlet"
