@@ -116,7 +116,8 @@ jobs:
           az datafactory dataset create \
             --properties "$dataset_json" \
             --factory-name "sally-tie-out-reporting-poc" \
-            --resource-group "cw-mobile-rg"
+            --resource-group "cw-mobile-rg" \
+            --name "$dataset_name"
     
           echo "Created dataset: $dataset_name"
         done
