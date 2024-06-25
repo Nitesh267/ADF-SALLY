@@ -43,6 +43,32 @@ jobs:
 
     - name: Set Azure subscription
       run: az account set --subscription 0eb16af5-8c5c-42f6-85cb-65f4f74714ce
+    # Install az extension for Data Factory (if not already installed)
+    - name: Install az extension for Data Factory (optional)
+      run: |
+        az extension add --name datafactory --only-show-errors
+
+        # Loop through linked service JSON files
+    # Loop through linked service JSON files
+    - name: Loop through Linked Service JSON files
+      run: |
+        for filename in ./linkedService/*.json; do
+        linked_service_name="${filename##*/}"
+        linked_service_name="${linked_service_name%.*}"  # Extract name from filename
+
+        # Read linked service JSON content
+        linked_service_properties=$(cat "$filename")
+
+        # Create linked service using az command
+        az datafactory linked-service create \
+            --factory-name "sally-tie-out-reporting-poc" \
+            --resource-group "cw-mobile-rg" \
+            --linked-service-name "$linked_service_name" \
+            --properties "$linked_service_properties"
+
+        echo "Created linked service: $linked_service_name"
+        done
+
     # - name: Run dataflow creation script
     #   run: |
     #     # Define the directory containing dataflow JSON files
