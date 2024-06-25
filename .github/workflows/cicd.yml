@@ -64,7 +64,7 @@ jobs:
             --factory-name "sally-tie-out-reporting-poc" \
             --resource-group "cw-mobile-rg" \
             --name "$trigger_name" \
-            --definition "$trigger_definition"
+            --properties "$trigger_definition"
 
         echo "Created trigger: $trigger_name"
         done
