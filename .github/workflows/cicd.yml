@@ -48,7 +48,7 @@ jobs:
       run: |
         az extension add --name datafactory --only-show-errors
 
-        # Loop through linked service JSON files
+        
     # Loop through trigger JSON files
     - name: Loop through Trigger JSON files
       run: |
@@ -58,6 +58,11 @@ jobs:
 
         # Read trigger JSON content
         trigger_definition=$(cat "$filename")
+        # Check if trigger definition is empty
+        if [[ -z "$trigger_definition" ]]; then
+        echo "Error: Empty trigger definition in file: $filename"
+        continue  # Skip to the next iteration
+        fi
 
         # Create ADF trigger using az command
         az datafactory trigger create \
