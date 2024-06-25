@@ -94,6 +94,36 @@ jobs:
             
     #         echo "Created dataflow: $dataflow_name"
     #     done
+    
+
+    - name: Create datasets from JSON files in dataset folder
+      run: |
+        #!/bin/bash
+    
+        # Define the dataset folder path
+        dataset_dir="./dataset/"
+    
+        # Loop through all JSON files in the directory
+        for filename in "$dataset_dir"*.json; do
+          # Extract dataset name from filename (assuming filename format matches dataset name)
+          dataset_name="${filename##*/}"
+          dataset_name="${dataset_name%.*}"  # Remove extension
+    
+          # Read the dataset JSON content from the file
+          dataset_json=$(<"$filename")
+    
+          # Use az datafactory dataset create with the file content
+          az datafactory dataset create \
+            --properties "$dataset_json" \
+            --factory-name "yourFactoryName" \
+            --resource-group "yourResourceGroup"
+    
+          echo "Created dataset: $dataset_name"
+        done
+    
+        echo "Finished processing dataset JSON files."
+    
+    
     - name: Run dataflow creation script
       run: |
         #!/bin/bash
