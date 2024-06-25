@@ -107,8 +107,8 @@ jobs:
             # Create ADF pipeline using az command
             az datafactory pipeline create-run \
             --factory-name "sally-tie-out-reporting-poc" \
-            --resource-group "${{ secrets.ADF_RESOURCE_GROUP }}" \
-            --name "cw-mobile-rg" 
+            --resource-group "cw-mobile-rg" \
+            --name "$pipeline_name" 
 
             echo "Created pipeline: $pipeline_name"
         done    
