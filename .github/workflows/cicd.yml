@@ -132,13 +132,13 @@ jobs:
     #       az datafactory data-flow create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataflow_name" --data-flow "@$file" --properties "$properties_file" --flow-type "Flowlet" --allow-preview false
     #     done
           
-    - name: Deploy Data Factory Datasets
-      run: |
-        for file in ./dataset/*.json; do
-          dataset_name=$(basename "$file" .json)
-          echo "Deploying dataset $dataset_name from $file"
-          az datafactory dataset create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataset_name" --dataset "@$file"
-        done
+    # - name: Deploy Data Factory Datasets
+    #   run: |
+    #     for file in ./dataset/*.json; do
+    #       dataset_name=$(basename "$file" .json)
+    #       echo "Deploying dataset $dataset_name from $file"
+    #       az datafactory dataset create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataset_name" --dataset "@$file"
+    #     done
 
     # - name: Deploy Data Factory Linked Services
     #   run: |
