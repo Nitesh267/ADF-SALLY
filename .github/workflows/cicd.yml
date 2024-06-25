@@ -61,7 +61,8 @@ jobs:
             -n "$dataflow_name" \
             -t "Flowlet" \
             --properties "$filename" \
-            --data-flow "@$filename"  # Specify the data flow definition file
+            --data-flow "@$filename" \  # Specify the data flow definition file
+            --allow-preview false
     
             echo "Created dataflow: $dataflow_name"
         done
