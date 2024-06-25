@@ -43,7 +43,25 @@ jobs:
     - name: Set Azure subscription
       run: az account set --subscription 0eb16af5-8c5c-42f6-85cb-65f4f74714ce
     #   run: az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
+    - name: Deploy Data Factory Dataflows
+      run: |
+        for filename in ./dataflow/*.json; do
+            dataflow_name=$(basename "$filename" .json)
+            echo "Deploying dataflow $dataflow_name from $filename"
+            
+            # Read the JSON content from the file
+            data_flow_json=$(cat "$filename")
+            
+            # Create the data flow using Azure CLI
+            az datafactory data-flow create \
+            --resource-group cw-mobile-rg \
+            --factory-name sally-tie-out-reporting-poc \
+            --name "$dataflow_name" \
+            --data-flow "$data_flow_json" \
+            --flow-type "Flowlet"
+            
+            echo "Created dataflow: $dataflow_name"
+        done
     - name: Run dataflow creation script
       run: |
         #!/bin/bash
@@ -60,8 +78,7 @@ jobs:
             # Construct the az datafactory command
             az datafactory data-flow create \
             -g cw-mobile-rg \
-            # -f sally-tie-out-reporting-poc \
-            -f $filename \
+            -f sally-tie-out-reporting-poc \
             -n "$dataflow_name" \
             -t "Flowlet" \
             --properties "$filename"
