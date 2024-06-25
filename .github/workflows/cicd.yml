@@ -115,8 +115,8 @@ jobs:
           # Use az datafactory dataset create with the file content
           az datafactory dataset create \
             --properties "$dataset_json" \
-            --factory-name "yourFactoryName" \
-            --resource-group "yourResourceGroup"
+            --factory-name "sally-tie-out-reporting-poc" \
+            --resource-group "cw-mobile-rg"
     
           echo "Created dataset: $dataset_name"
         done
