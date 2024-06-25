@@ -94,8 +94,7 @@ jobs:
             
     #         echo "Created dataflow: $dataflow_name"
     #     done
-    
-    - name: Create pipeline from JSON files in pipeline folder
+    - name: Loop through pipeline JSON files
       run: |
         for filename in ./pipeline/*.json; do
             pipeline_name="${filename##*/}"
@@ -105,13 +104,32 @@ jobs:
             pipeline_json=$(cat "$filename")
 
             # Create ADF pipeline using az command
-            az datafactory pipeline create-run \
-            --factory-name "sally-tie-out-reporting-poc" \
-            --resource-group "cw-mobile-rg" \
-            --name "$pipeline_name" 
+            az datafactory pipeline create \
+            --factory-name "${{ secrets.ADF_FACTORY_NAME }}" \
+            --resource-group "${{ secrets.ADF_RESOURCE_GROUP }}" \
+            --name "$pipeline_name" \
+            --definition "$pipeline_json"
 
             echo "Created pipeline: $pipeline_name"
-        done    
+        done
+
+    # - name: Create pipeline from JSON files in pipeline folder
+    #   run: |
+    #     for filename in ./pipeline/*.json; do
+    #         pipeline_name="${filename##*/}"
+    #         pipeline_name="${pipeline_name%.*}"  # Extract name from filename
+
+    #         # Read pipeline JSON content
+    #         pipeline_json=$(cat "$filename")
+
+    #         # Create ADF pipeline using az command
+    #         az datafactory pipeline create-run \
+    #         --factory-name "sally-tie-out-reporting-poc" \
+    #         --resource-group "cw-mobile-rg" \
+    #         --name "$pipeline_name" 
+
+    #         echo "Created pipeline: $pipeline_name"
+    #     done    
 
     - name: Create datasets from JSON files in dataset folder
       run: |
