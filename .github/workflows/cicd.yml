@@ -79,7 +79,7 @@ jobs:
             dataflow_name="${dataflow_name%.*}"  # Remove extension
 
             # Construct the az datafactory command
-            az datafactory data-flow create \
+            az datafactory data-flow update \
             -g cw-mobile-rg \
             -f sally-tie-out-reporting-poc \
             -n "$dataflow_name" \
