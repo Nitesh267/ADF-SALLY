@@ -105,10 +105,10 @@ jobs:
             pipeline_json=$(cat "$filename")
 
             # Create ADF pipeline using az command
-            az datafactory pipeline create \
-            --factory-name "${{ secrets.ADF_FACTORY_NAME }}" \
+            az datafactory pipeline create-run \
+            --factory-name "sally-tie-out-reporting-poc" \
             --resource-group "${{ secrets.ADF_RESOURCE_GROUP }}" \
-            --name "$pipeline_name" \
+            --name "cw-mobile-rg" \
             --definition "$pipeline_json"
 
             echo "Created pipeline: $pipeline_name"
