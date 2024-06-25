@@ -27,9 +27,13 @@ jobs:
       with:
         python-version: '3.x'
 
-    - name: Install Azure CLI
-      run: |
-        curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    # - name: Install Azure CLI
+    #   run: |
+    #     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+    - name: Set up Azure PowerShell
+      uses: azure/powershell@v1
+      with:
+        azPSVersion: '3.0.0'
 
     # - name: Authenticate with Azure
     #   run: |
