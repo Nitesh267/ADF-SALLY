@@ -31,18 +31,24 @@ jobs:
       run: |
         curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
 
-    - name: Authenticate with Azure
-      run: |
-        az login --service-principal -u f07fbbe2-9424-46af-a574-a254e78cec71 -p 6hS8Q~W9TAtIvDl~exiQGSEhgkbpYfbsKRPT5bJq --tenant 0ed45c0a-a9b9-45ca-92b3-6cceb454c222
-        # az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
-      env:
-        AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-        AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
-        AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+    # - name: Authenticate with Azure
+    #   run: |
+    #     az login --service-principal -u f07fbbe2-9424-46af-a574-a254e78cec71 -p 6hS8Q~W9TAtIvDl~exiQGSEhgkbpYfbsKRPT5bJq --tenant 0ed45c0a-a9b9-45ca-92b3-6cceb454c222
+    #     # az login --service-principal -u ${{ secrets.AZURE_CLIENT_ID }} -p ${{ secrets.AZURE_CLIENT_SECRET }} --tenant ${{ secrets.AZURE_TENANT_ID }}
+    #   env:
+    #     AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+    #     AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+    #     AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
 
-    - name: Set Azure subscription
-      run: az account set --subscription 0eb16af5-8c5c-42f6-85cb-65f4f74714ce
+    # - name: Set Azure subscription
+    #   run: az account set --subscription 0eb16af5-8c5c-42f6-85cb-65f4f74714ce
     #   run: az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+    - name: Connect to Azure
+      run: |
+        Connect-AzAccount -ServicePrincipal `
+          -Tenant 0ed45c0a-a9b9-45ca-92b3-6cceb454c222 `
+          -ApplicationId f07fbbe2-9424-46af-a574-a254e78cec71 `
+          -CertificateThumbprint 6hS8Q~W9TAtIvDl~exiQGSEhgkbpYfbsKRPT5bJq
 
     - name: Deploy Data Factory Resources
       uses: azure/data-factory-deploy-action@v1.2.0
