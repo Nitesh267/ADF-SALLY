@@ -43,35 +43,34 @@ jobs:
 
     - name: Set Azure subscription
       run: az account set --subscription 0eb16af5-8c5c-42f6-85cb-65f4f74714ce
-    - name: Run dataflow creation script
-      run: |
-        # Define the directory containing dataflow JSON files
-        dataflow_dir="./dataflow/"
+    # - name: Run dataflow creation script
+    #   run: |
+    #     # Define the directory containing dataflow JSON files
+    #     dataflow_dir="./dataflow/"
     
-        # Loop through all JSON files in the directory
-        for filename in "$dataflow_dir"*.json; do
-            # Extract dataflow name from filename (assuming filename format matches dataflow name)
-            dataflow_name="${filename##*/}"
-            dataflow_name="${dataflow_name%.*}"  # Remove extension
+    #     # Loop through all JSON files in the directory
+    #     for filename in "$dataflow_dir"*.json; do
+    #         # Extract dataflow name from filename (assuming filename format matches dataflow name)
+    #         dataflow_name="${filename##*/}"
+    #         dataflow_name="${dataflow_name%.*}"  # Remove extension
     
-            # Construct the az datafactory command
-            az datafactory data-flow create \
-            -g cw-mobile-rg \
-            -f sally-tie-out-reporting-poc \
-            -n "$dataflow_name" \
-            -t "Flowlet" \
-            --properties "$filename" \
-            --data-flow "@$filename" \  # Specify the data flow definition file
-            --allow-preview false
+    #         # Construct the az datafactory command
+    #         az datafactory data-flow create \
+    #         -g cw-mobile-rg \
+    #         -f sally-tie-out-reporting-poc \
+    #         -n "$dataflow_name" \
+    #         -t "Flowlet" \
+    #         --properties "$filename" \
+    #         --data-flow "@$filename"   # Specify the data flow definition file
     
-            echo "Created dataflow: $dataflow_name"
-        done
+    #         echo "Created dataflow: $dataflow_name"
+    #     done
     
-        echo "Finished processing dataflow JSON files."
-      shell: /usr/bin/bash -e {0}
-      env:
-        AZURE_RESOURCE_GROUP: cw-mobile-rg
-        AZURE_DATA_FACTORY_NAME: sally-tie-out-reporting-poc
+    #     echo "Finished processing dataflow JSON files."
+    #   shell: /usr/bin/bash -e {0}
+    #   env:
+    #     AZURE_RESOURCE_GROUP: cw-mobile-rg
+    #     AZURE_DATA_FACTORY_NAME: sally-tie-out-reporting-poc
     
     #   run: az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
@@ -109,7 +108,7 @@ jobs:
             dataflow_name="${dataflow_name%.*}"  # Remove extension
 
             # Construct the az datafactory command
-            az datafactory data-flow update \
+            az datafactory data-flow create \
             -g cw-mobile-rg \
             -f sally-tie-out-reporting-poc \
             -n "$dataflow_name" \
