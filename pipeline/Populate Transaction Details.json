@@ -3,7 +3,7 @@
 	"properties": {
 		"activities": [
 			{
-				"name": "Get All File Details",
+				"name": "Get All File Detail",
 				"type": "GetMetadata",
 				"dependsOn": [],
 				"policy": {
@@ -22,11 +22,6 @@
 					"fieldList": [
 						"childItems"
 					],
-					"storeSettings": {
-						"type": "AzureBlobStorageReadSettings",
-						"recursive": true,
-						"enablePartitionDiscovery": false
-					},
 					"formatSettings": {
 						"type": "DelimitedTextReadSettings"
 					}
@@ -37,7 +32,7 @@
 				"type": "ForEach",
 				"dependsOn": [
 					{
-						"activity": "Get All File Details",
+						"activity": "Get All File Detail",
 						"dependencyConditions": [
 							"Succeeded"
 						]
