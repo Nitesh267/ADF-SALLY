@@ -73,7 +73,7 @@ jobs:
 
         echo "Created trigger: $trigger_name"
         done
-    Loop through linked service JSON files
+    # Loop through linked service JSON files
 
 
     # - name: Run dataflow creation script
