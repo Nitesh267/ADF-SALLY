@@ -1,5 +1,5 @@
 {
-	"name": "PL_TRANS_ISRS_IA",
+	"name": "PL_TRANS_ISRS_IA_TEST",
 	"properties": {
 		"activities": [
 			{
@@ -16,7 +16,7 @@
 				"userProperties": [],
 				"typeProperties": {
 					"dataset": {
-						"referenceName": "DS_ABLB_IP_ISRS_SLY",
+						"referenceName": "DS_ABLB_IP_ISRS_SLY_TEST",
 						"type": "DatasetReference"
 					},
 					"fieldList": [
@@ -100,7 +100,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"dataflow": {
-												"referenceName": "DF_ISRS_SLY_IA",
+												"referenceName": "DF_ISRS_SLY_IA_TEST",
 												"type": "DataFlowReference",
 												"parameters": {
 													"Filename": {
@@ -145,7 +145,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"dataset": {
-												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 												"type": "DatasetReference",
 												"parameters": {
 													"Filename": {
@@ -156,7 +156,7 @@
 											},
 											"logStorageSettings": {
 												"linkedServiceName": {
-													"referenceName": "AzureBlobStorage1",
+													"referenceName": "AzureBlobStorage12",
 													"type": "LinkedServiceReference"
 												}
 											},
@@ -222,7 +222,7 @@
 										},
 										"inputs": [
 											{
-												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 												"type": "DatasetReference",
 												"parameters": {
 													"Filename": {
@@ -234,7 +234,7 @@
 										],
 										"outputs": [
 											{
-												"referenceName": "DS_ABLB_ARCH",
+												"referenceName": "DS_ABLB_ARCH_TEST",
 												"type": "DatasetReference"
 											}
 										]
@@ -321,7 +321,7 @@
 											}
 										},
 										"linkedServiceName": {
-											"referenceName": "AzureSqlDatabase1",
+											"referenceName": "AzureSqlDatabase12",
 											"type": "LinkedServiceReference"
 										}
 									},
@@ -346,7 +346,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"dataset": {
-												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 												"type": "DatasetReference",
 												"parameters": {
 													"Filename": {
@@ -357,7 +357,7 @@
 											},
 											"logStorageSettings": {
 												"linkedServiceName": {
-													"referenceName": "AzureBlobStorage1",
+													"referenceName": "AzureBlobStorage12",
 													"type": "LinkedServiceReference"
 												}
 											},
@@ -423,7 +423,7 @@
 										},
 										"inputs": [
 											{
-												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 												"type": "DatasetReference",
 												"parameters": {
 													"Filename": {
@@ -435,7 +435,7 @@
 										],
 										"outputs": [
 											{
-												"referenceName": "DS_ABLB_ERR",
+												"referenceName": "DS_ABLB_ERR_TEST",
 												"type": "DatasetReference"
 											}
 										]
@@ -532,7 +532,7 @@
 								],
 								"ifTrueActivities": [
 									{
-										"name": "ISeries_BSG_IA_DF",
+										"name": "ISeries_BSG_IA_DF_TEST",
 										"type": "ExecuteDataFlow",
 										"dependsOn": [],
 										"policy": {
@@ -545,7 +545,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"dataflow": {
-												"referenceName": "DF_ISRS_BSG_IA",
+												"referenceName": "DF_ISRS_BSG_IA_TEST",
 												"type": "DataFlowReference",
 												"parameters": {
 													"Filename": {
@@ -590,7 +590,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"dataset": {
-												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 												"type": "DatasetReference",
 												"parameters": {
 													"Filename": {
@@ -601,7 +601,7 @@
 											},
 											"logStorageSettings": {
 												"linkedServiceName": {
-													"referenceName": "AzureBlobStorage1",
+													"referenceName": "AzureBlobStorage12",
 													"type": "LinkedServiceReference"
 												}
 											},
@@ -667,7 +667,7 @@
 										},
 										"inputs": [
 											{
-												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 												"type": "DatasetReference",
 												"parameters": {
 													"Filename": {
@@ -679,7 +679,7 @@
 										],
 										"outputs": [
 											{
-												"referenceName": "DS_ABLB_ARCH",
+												"referenceName": "DS_ABLB_ARCH_TEST",
 												"type": "DatasetReference"
 											}
 										]
@@ -780,7 +780,7 @@
 											}
 										},
 										"linkedServiceName": {
-											"referenceName": "AzureSqlDatabase1",
+											"referenceName": "AzureSqlDatabase12",
 											"type": "LinkedServiceReference"
 										}
 									},
@@ -805,7 +805,7 @@
 										"userProperties": [],
 										"typeProperties": {
 											"dataset": {
-												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 												"type": "DatasetReference",
 												"parameters": {
 													"Filename": {
@@ -816,7 +816,7 @@
 											},
 											"logStorageSettings": {
 												"linkedServiceName": {
-													"referenceName": "AzureBlobStorage1",
+													"referenceName": "AzureBlobStorage12",
 													"type": "LinkedServiceReference"
 												}
 											},
@@ -882,7 +882,7 @@
 										},
 										"inputs": [
 											{
-												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+												"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 												"type": "DatasetReference",
 												"parameters": {
 													"Filename": {
@@ -894,7 +894,7 @@
 										],
 										"outputs": [
 											{
-												"referenceName": "DS_ABLB_ERR",
+												"referenceName": "DS_ABLB_ERR_TEST",
 												"type": "DatasetReference"
 											}
 										]
@@ -998,7 +998,7 @@
 											}
 										},
 										"linkedServiceName": {
-											"referenceName": "AzureSqlDatabase1",
+											"referenceName": "AzureSqlDatabase12",
 											"type": "LinkedServiceReference"
 										}
 									}
@@ -1090,7 +1090,7 @@
 					}
 				},
 				"linkedServiceName": {
-					"referenceName": "AzureSqlDatabase1",
+					"referenceName": "AzureSqlDatabase12",
 					"type": "LinkedServiceReference"
 				}
 			},
