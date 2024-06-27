@@ -77,25 +77,20 @@ jobs:
     - name: Loop through Linked Service JSON files
       run: |
         for filename in ./linkedService/*.json; do
-        linked_service_name="${filename##*/}"
-        linked_service_name="${linked_service_name%.*}"  # Extract name from filename
-
-        # Read linked service JSON content
-        linked_service_properties=$(cat "$filename")
-
-        cat "$filename"
-
-
-        echo "Created linked service: $linked_service_name"
-
-        # Create linked service using az command
-        az datafactory linked-service create \
+          linked_service_name="${filename##*/}"
+          linked_service_name="${linked_service_name%.*}"  # Extract name from filename
+    
+          # Read linked service JSON content using jq (if available)
+          linked_service_properties=$(jq -r . "$filename")
+    
+          # Create linked service using az command
+          az datafactory linked-service create \
             --factory-name "sally-tie-out-reporting-poc" \
             --resource-group "cw-mobile-rg" \
             --linked-service-name "$linked_service_name" \
             --properties "$linked_service_properties"
-
-        echo "Created linked service: $linked_service_name"
+    
+          echo "Created linked service: $linked_service_name"
         done
 
     # - name: Run dataflow creation script
