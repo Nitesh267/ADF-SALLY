@@ -151,20 +151,20 @@ jobs:
         for filename in ./linkedService/*.json; do
           linked_service_name="${filename##*/}"
           linked_service_name="${linked_service_name%.*}"  # Extract name from filename
-    
-          # Read linked service JSON content using jq (if available)
-          linked_service_properties=$(cat "$filename")
+          
+          # Read linked service JSON content and format it as a JSON string
+          linked_service_properties=$(jq -c '.' "$filename")
 
-          echo "test $linked_service_properties"
-    
-          # Create linked service using az command with verbose logging
+          echo "Deploying linked service $linked_service_name from $filename"
+
+          # Create linked service using az command
           az datafactory linked-service create \
             --factory-name "sally-tie-out-reporting-poc" \
             --resource-group "cw-mobile-rg" \
-            --linked-service-name "$linked_service_name" \
-            --properties "$linked_service_properties" \
-            --verbose
-    
+              --linked-service-name "$linked_service_name" \
+              --properties "$linked_service_properties" \
+              --verbose
+
           echo "Created linked service: $linked_service_name"
         done
     - name: Create datasets from JSON files in dataset folder
