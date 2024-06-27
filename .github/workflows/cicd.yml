@@ -49,31 +49,31 @@ jobs:
         az extension add --name datafactory --only-show-errors
 
         
-    # # Loop through trigger JSON files
-    # - name: Loop through Trigger JSON files
-    #   run: |
-    #     for filename in ./trigger/*.json; do
-    #     trigger_name="${filename##*/}"
-    #     trigger_name="${trigger_name%.*}"  # Extract name from filename
+    # Loop through trigger JSON files
+    - name: Loop through Trigger JSON files
+      run: |
+        for filename in ./trigger/*.json; do
+        trigger_name="${filename##*/}"
+        trigger_name="${trigger_name%.*}"  # Extract name from filename
 
-    #     # Read trigger JSON content
-    #     trigger_definition=$(cat "$filename")
-    #     # Check if trigger definition is empty
-    #     if [[ -z "$trigger_definition" ]]; then
-    #     echo "Error: Empty trigger definition in file: $filename"
-    #     continue  # Skip to the next iteration
-    #     fi
+        # Read trigger JSON content
+        trigger_definition=$(cat "$filename")
+        # Check if trigger definition is empty
+        if [[ -z "$trigger_definition" ]]; then
+        echo "Error: Empty trigger definition in file: $filename"
+        continue  # Skip to the next iteration
+        fi
 
-    #     # Create ADF trigger using az command
-    #     az datafactory trigger create \
-    #         --factory-name "sally-tie-out-reporting-poc" \
-    #         --resource-group "cw-mobile-rg" \
-    #         --name "$trigger_name" \
-    #         --properties "$trigger_definition"
+        # Create ADF trigger using az command
+        az datafactory trigger create \
+            --factory-name "sally-tie-out-reporting-poc" \
+            --resource-group "cw-mobile-rg" \
+            --name "$trigger_name" \
+            --properties "$trigger_definition"
 
-    #     echo "Created trigger: $trigger_name"
-    #     done
-    # Loop through linked service JSON files
+        echo "Created trigger: $trigger_name"
+        done
+    Loop through linked service JSON files
 
 
     # - name: Run dataflow creation script

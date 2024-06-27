@@ -6,7 +6,7 @@
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "Populate Transaction Details",
+					"referenceName": "PL_TRANS_ISRS_IA",
 					"type": "PipelineReference"
 				}
 			}
