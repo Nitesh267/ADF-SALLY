@@ -1,8 +1,8 @@
 {
-	"name": "DS_ABLB_IP_ISRS_SLY_DYN",
+	"name": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureBlobStorage1",
+			"referenceName": "AzureBlobStorage12",
 			"type": "LinkedServiceReference"
 		},
 		"parameters": {
