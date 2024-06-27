@@ -1,5 +1,5 @@
 {
-	"name": "DS_ABLB_ERR",
+	"name": "DS_ABLB_ERR_TEST",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage12",
