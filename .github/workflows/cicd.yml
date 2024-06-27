@@ -53,25 +53,29 @@ jobs:
     - name: Loop through Trigger JSON files
       run: |
         for filename in ./trigger/*.json; do
-        trigger_name="${filename##*/}"
-        trigger_name="${trigger_name%.*}"  # Extract name from filename
+          trigger_name="${filename##*/}"
+          trigger_name="${trigger_name%.*}"  # Extract name from filename
 
-        # Read trigger JSON content
-        trigger_definition=$(cat "$filename")
-        # Check if trigger definition is empty
-        if [[ -z "$trigger_definition" ]]; then
-        echo "Error: Empty trigger definition in file: $filename"
-        continue  # Skip to the next iteration
-        fi
+          # Read trigger JSON content and format it as a JSON string
+          trigger_properties=$(jq -c '.properties' "$filename")
+          
+          # Check if trigger definition is empty
+          if [[ -z "$trigger_properties" ]]; then
+            echo "Error: Empty trigger definition in file: $filename"
+            continue  # Skip to the next iteration
+          fi
 
-        # Create ADF trigger using az command
-        az datafactory trigger create \
+          echo "Deploying trigger $trigger_name from $filename"
+
+          # Create ADF trigger using az command
+          az datafactory trigger create \
             --factory-name "sally-tie-out-reporting-poc" \
             --resource-group "cw-mobile-rg" \
-            --name "$trigger_name" \
-            --properties "$trigger_definition"
+              --name "$trigger_name" \
+              --properties "$trigger_properties" \
+              --verbose
 
-        echo "Created trigger: $trigger_name"
+          echo "Created trigger: $trigger_name"
         done
     # Loop through linked service JSON files
 
