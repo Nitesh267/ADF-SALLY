@@ -3,7 +3,6 @@
 	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"annotations": [],
-		// "type": "AzureBlobStorage",
 		"type": "AzureStorage",
 		"typeProperties": {
 			"connectionString": "DefaultEndpointsProtocol=https;AccountName=sfdatacloudint;EndpointSuffix=core.windows.net;",
