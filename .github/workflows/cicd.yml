@@ -82,7 +82,9 @@ jobs:
 
         # Read linked service JSON content
         linked_service_properties=$(cat "$filename")
-        
+
+        echo "$filename"
+
         echo "Created linked service: $linked_service_name"
 
         # Create linked service using az command
