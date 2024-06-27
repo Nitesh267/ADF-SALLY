@@ -72,65 +72,65 @@ jobs:
           echo "Created linked service: $linked_service_name"
         done
 
-    - name: Deploy Data Factory Datasets
-      run: |
-          for filename in ./dataset/*.json; do
-            dataset_name="${filename##*/}"
-            dataset_name="${dataset_name%.*}"  # Extract name from filename
-      
-            # Read dataset JSON content and format it as a JSON string
-            dataset_properties=$(jq -c '.properties' "$filename")
-            
-            # Check if dataset definition is empty
-            if [[ -z "$dataset_properties" ]]; then
-              echo "Error: Empty dataset definition in file: $filename"
-              continue  # Skip to the next iteration
-            fi
-      
-            echo "Deploying dataset $dataset_name from $filename"
-      
-            # Create dataset using az command
-            az datafactory dataset create \
-                --factory-name "sally-tie-out-reporting-poc" \
-                --resource-group "cw-mobile-rg" \
-                --name "$dataset_name" \
-                --properties "$dataset_properties" \
-                --verbose
-      
-            echo "Created dataset: $dataset_name"
-          done
-          
-          env:
-            AZURE_RESOURCE_GROUP: cw-mobile-rg
-            AZURE_DATA_FACTORY_NAME: sally-tie-out-reporting-poc
-      
-    # - name: Create datasets from JSON files in dataset folder
+    # - name: Deploy Data Factory Datasets
     #   run: |
-    #     #!/bin/bash
+    #       for filename in ./dataset/*.json; do
+    #         dataset_name="${filename##*/}"
+    #         dataset_name="${dataset_name%.*}"  # Extract name from filename
+      
+    #         # Read dataset JSON content and format it as a JSON string
+    #         dataset_properties=$(jq -c '.properties' "$filename")
+            
+    #         # Check if dataset definition is empty
+    #         if [[ -z "$dataset_properties" ]]; then
+    #           echo "Error: Empty dataset definition in file: $filename"
+    #           continue  # Skip to the next iteration
+    #         fi
+      
+    #         echo "Deploying dataset $dataset_name from $filename"
+      
+    #         # Create dataset using az command
+    #         az datafactory dataset create \
+    #             --factory-name "sally-tie-out-reporting-poc" \
+    #             --resource-group "cw-mobile-rg" \
+    #             --name "$dataset_name" \
+    #             --properties "$dataset_properties" \
+    #             --verbose
+      
+    #         echo "Created dataset: $dataset_name"
+    #       done
+          
+    #       env:
+    #         AZURE_RESOURCE_GROUP: cw-mobile-rg
+    #         AZURE_DATA_FACTORY_NAME: sally-tie-out-reporting-poc
+      
+    - name: Create datasets from JSON files in dataset folder
+      run: |
+        #!/bin/bash
     
-    #     # Define the dataset folder path
-    #     dataset_dir="./dataset/"
+        # Define the dataset folder path
+        dataset_dir="./dataset/"
     
-    #     # Loop through all JSON files in the directory
-    #     for filename in "$dataset_dir"*.json; do
-    #       # Extract dataset name from filename (assuming filename format matches dataset name)
-    #       dataset_name="${filename##*/}"
-    #       dataset_name="${dataset_name%.*}"  # Remove extension
+        # Loop through all JSON files in the directory
+        for filename in "$dataset_dir"*.json; do
+          # Extract dataset name from filename (assuming filename format matches dataset name)
+          dataset_name="${filename##*/}"
+          dataset_name="${dataset_name%.*}"  # Remove extension
     
-    #       # Read the dataset JSON content from the file
-    #       dataset_json=$(<"$filename")
+          # Read the dataset JSON content from the file
+          dataset_json=$(<"$filename")
     
-    #       # Use az datafactory dataset create with the file content
-    #       az datafactory dataset create \
-    #         --properties "$dataset_json" \
-    #         --factory-name "sally-tie-out-reporting-poc" \
-    #         --resource-group "cw-mobile-rg" \
-    #         --name "$dataset_name"
+          # Use az datafactory dataset create with the file content
+          az datafactory dataset create \
+            --properties "$dataset_json" \
+            --factory-name "sally-tie-out-reporting-poc" \
+            --resource-group "cw-mobile-rg" \
+            --name "$dataset_name"
     
-    #       echo "Created dataset: $dataset_name"
-    #     done
+          echo "Created dataset: $dataset_name"
+        done
     
-    #     echo "Finished processing dataset JSON files."
+        echo "Finished processing dataset JSON files."
     
     
     - name: Run dataflow creation script
