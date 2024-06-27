@@ -99,7 +99,7 @@ jobs:
       
             echo "Created dataset: $dataset_name"
           done
-          shell: /usr/bin/bash -e {0}
+          
           env:
             AZURE_RESOURCE_GROUP: cw-mobile-rg
             AZURE_DATA_FACTORY_NAME: sally-tie-out-reporting-poc
