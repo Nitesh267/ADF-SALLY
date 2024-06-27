@@ -49,30 +49,30 @@ jobs:
         az extension add --name datafactory --only-show-errors
 
         
-    # Loop through trigger JSON files
-    - name: Loop through Trigger JSON files
-      run: |
-        for filename in ./trigger/*.json; do
-        trigger_name="${filename##*/}"
-        trigger_name="${trigger_name%.*}"  # Extract name from filename
+    # # Loop through trigger JSON files
+    # - name: Loop through Trigger JSON files
+    #   run: |
+    #     for filename in ./trigger/*.json; do
+    #     trigger_name="${filename##*/}"
+    #     trigger_name="${trigger_name%.*}"  # Extract name from filename
 
-        # Read trigger JSON content
-        trigger_definition=$(cat "$filename")
-        # Check if trigger definition is empty
-        if [[ -z "$trigger_definition" ]]; then
-        echo "Error: Empty trigger definition in file: $filename"
-        continue  # Skip to the next iteration
-        fi
+    #     # Read trigger JSON content
+    #     trigger_definition=$(cat "$filename")
+    #     # Check if trigger definition is empty
+    #     if [[ -z "$trigger_definition" ]]; then
+    #     echo "Error: Empty trigger definition in file: $filename"
+    #     continue  # Skip to the next iteration
+    #     fi
 
-        # Create ADF trigger using az command
-        az datafactory trigger create \
-            --factory-name "sally-tie-out-reporting-poc" \
-            --resource-group "cw-mobile-rg" \
-            --name "$trigger_name" \
-            --properties "$trigger_definition"
+    #     # Create ADF trigger using az command
+    #     az datafactory trigger create \
+    #         --factory-name "sally-tie-out-reporting-poc" \
+    #         --resource-group "cw-mobile-rg" \
+    #         --name "$trigger_name" \
+    #         --properties "$trigger_definition"
 
-        echo "Created trigger: $trigger_name"
-        done
+    #     echo "Created trigger: $trigger_name"
+    #     done
     # Loop through linked service JSON files
     - name: Loop through Linked Service JSON files
       run: |
@@ -144,24 +144,7 @@ jobs:
             
     #         echo "Created dataflow: $dataflow_name"
     #     done
-    - name: Loop through pipeline JSON files
-      run: |  # Loop through JSON files
-        for filename in ./pipeline/*.json; do
-            pipeline_name="${filename##*/}"
-            pipeline_name="${pipeline_name%.*}"  # Extract name from filename
 
-            # Read pipeline JSON content
-            pipeline_json=$(cat "$filename")
-
-            # Create ADF pipeline using az command with definition as argument
-            az datafactory pipeline create \
-            --factory-name "sally-tie-out-reporting-poc" \
-            --resource-group "cw-mobile-rg" \
-            --name "$pipeline_name" \
-            --pipeline "$pipeline_json"
-
-            echo "Created pipeline: $pipeline_name"
-        done
 
     # - name: Create pipeline from JSON files in pipeline folder
     #   run: |
@@ -235,7 +218,42 @@ jobs:
         done
 
         echo "Finished processing dataflow JSON files."
+    - name: Loop through pipeline JSON files
+      run: |  # Loop through JSON files
+        for filename in ./pipeline/*.json; do
+            pipeline_name="${filename##*/}"
+            pipeline_name="${pipeline_name%.*}"  # Extract name from filename
 
+            # Read pipeline JSON content
+            pipeline_json=$(cat "$filename")
+
+            # Create ADF pipeline using az command with definition as argument
+            az datafactory pipeline create \
+            --factory-name "sally-tie-out-reporting-poc" \
+            --resource-group "cw-mobile-rg" \
+            --name "$pipeline_name" \
+            --pipeline "$pipeline_json"
+
+            echo "Created pipeline: $pipeline_name"
+        done
+    - name: Loop through pipeline JSON files
+      run: |  # Loop through JSON files
+        for filename in ./pipeline/*.json; do
+            pipeline_name="${filename##*/}"
+            pipeline_name="${pipeline_name%.*}"  # Extract name from filename
+
+            # Read pipeline JSON content
+            pipeline_json=$(cat "$filename")
+
+            # Create ADF pipeline using az command with definition as argument
+            az datafactory pipeline create \
+            --factory-name "sally-tie-out-reporting-poc" \
+            --resource-group "cw-mobile-rg" \
+            --name "$pipeline_name" \
+            --pipeline "$pipeline_json"
+
+            echo "Created pipeline: $pipeline_name"
+        done
     # - name: Deploy Data Factory Dataflows
     #   run: |
     #     pwd
