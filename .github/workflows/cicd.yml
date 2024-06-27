@@ -83,12 +83,13 @@ jobs:
           # Read linked service JSON content using jq (if available)
           linked_service_properties=$(jq -r . "$filename")
     
-          # Create linked service using az command
+          # Create linked service using az command with verbose logging
           az datafactory linked-service create \
             --factory-name "sally-tie-out-reporting-poc" \
             --resource-group "cw-mobile-rg" \
             --linked-service-name "$linked_service_name" \
-            --properties "$linked_service_properties"
+            --properties "$linked_service_properties" \
+            --verbose
     
           echo "Created linked service: $linked_service_name"
         done
