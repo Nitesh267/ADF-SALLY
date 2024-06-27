@@ -49,107 +49,7 @@ jobs:
         az extension add --name datafactory --only-show-errors
 
         
-    # Loop through trigger JSON files
-    - name: Loop through Trigger JSON files
-      run: |
-        for filename in ./trigger/*.json; do
-          trigger_name="${filename##*/}"
-          trigger_name="${trigger_name%.*}"  # Extract name from filename
-
-          # Read trigger JSON content and format it as a JSON string
-          trigger_properties=$(jq -c '.properties' "$filename")
-          
-          # Check if trigger definition is empty
-          if [[ -z "$trigger_properties" ]]; then
-            echo "Error: Empty trigger definition in file: $filename"
-            continue  # Skip to the next iteration
-          fi
-
-          echo "Deploying trigger $trigger_name from $filename"
-
-          # Create ADF trigger using az command
-          az datafactory trigger create \
-            --factory-name "sally-tie-out-reporting-poc" \
-            --resource-group "cw-mobile-rg" \
-              --name "$trigger_name" \
-              --properties "$trigger_properties" \
-              --verbose
-
-          echo "Created trigger: $trigger_name"
-        done
-    # Loop through linked service JSON files
-
-
-    # - name: Run dataflow creation script
-    #   run: |
-    #     # Define the directory containing dataflow JSON files
-    #     dataflow_dir="./dataflow/"
     
-    #     # Loop through all JSON files in the directory
-    #     for filename in "$dataflow_dir"*.json; do
-    #         # Extract dataflow name from filename (assuming filename format matches dataflow name)
-    #         dataflow_name="${filename##*/}"
-    #         dataflow_name="${dataflow_name%.*}"  # Remove extension
-    
-    #         # Construct the az datafactory command
-    #         az datafactory data-flow create \
-    #         -g cw-mobile-rg \
-    #         -f sally-tie-out-reporting-poc \
-    #         -n "$dataflow_name" \
-    #         -t "Flowlet" \
-    #         --properties "$filename" \
-    #         --data-flow "@$filename"   # Specify the data flow definition file
-    
-    #         echo "Created dataflow: $dataflow_name"
-    #     done
-    
-    #     echo "Finished processing dataflow JSON files."
-    #   shell: /usr/bin/bash -e {0}
-    #   env:
-    #     AZURE_RESOURCE_GROUP: cw-mobile-rg
-    #     AZURE_DATA_FACTORY_NAME: sally-tie-out-reporting-poc
-    
-    #   run: az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-
-
-    # - name: Deploy Data Factory Dataflows
-    #   run: |
-    #     for filename in ./dataflow/*.json; do
-    #         dataflow_name=$(basename "$filename" .json)
-    #         echo "Deploying dataflow $dataflow_name from $filename"
-            
-    #         # Read the JSON content from the file
-    #         data_flow_json=$(cat "$filename")
-            
-    #         # Create the data flow using Azure CLI
-    #         az datafactory data-flow create \
-    #         --resource-group cw-mobile-rg \
-    #         --factory-name sally-tie-out-reporting-poc \
-    #         --name "$dataflow_name" \
-    #         --data-flow "$data_flow_json" \
-    #         --flow-type "Flowlet"
-            
-    #         echo "Created dataflow: $dataflow_name"
-    #     done
-
-
-    # - name: Create pipeline from JSON files in pipeline folder
-    #   run: |
-    #     for filename in ./pipeline/*.json; do
-    #         pipeline_name="${filename##*/}"
-    #         pipeline_name="${pipeline_name%.*}"  # Extract name from filename
-
-    #         # Read pipeline JSON content
-    #         pipeline_json=$(cat "$filename")
-
-    #         # Create ADF pipeline using az command
-    #         az datafactory pipeline create-run \
-    #         --factory-name "sally-tie-out-reporting-poc" \
-    #         --resource-group "cw-mobile-rg" \
-    #         --name "$pipeline_name" 
-
-    #         echo "Created pipeline: $pipeline_name"
-    #     done    
     - name: Loop through Linked Service JSON files
       run: |
         for filename in ./linkedService/*.json; do
@@ -244,64 +144,61 @@ jobs:
             echo "Created pipeline: $pipeline_name"
         done
 
-    - name: Loop through pipeline JSON files
-      run: |  # Loop through JSON files
-        for filename in ./pipeline/*.json; do
-            pipeline_name="${filename##*/}"
-            pipeline_name="${pipeline_name%.*}"  # Extract name from filename
+    
+# Loop through trigger JSON files
+    - name: Loop through Trigger JSON files
+      run: |
+        for filename in ./trigger/*.json; do
+          trigger_name="${filename##*/}"
+          trigger_name="${trigger_name%.*}"  # Extract name from filename
 
-            # Read pipeline JSON content
-            pipeline_json=$(cat "$filename")
+          # Read trigger JSON content and format it as a JSON string
+          trigger_properties=$(jq -c '.properties' "$filename")
+          
+          # Check if trigger definition is empty
+          if [[ -z "$trigger_properties" ]]; then
+            echo "Error: Empty trigger definition in file: $filename"
+            continue  # Skip to the next iteration
+          fi
 
-            # Create ADF pipeline using az command with definition as argument
-            az datafactory pipeline create \
+          echo "Deploying trigger $trigger_name from $filename"
+
+          # Create ADF trigger using az command
+          az datafactory trigger create \
             --factory-name "sally-tie-out-reporting-poc" \
             --resource-group "cw-mobile-rg" \
-            --name "$pipeline_name" \
-            --pipeline "$pipeline_json"
+              --name "$trigger_name" \
+              --properties "$trigger_properties" \
+              --verbose
 
-            echo "Created pipeline: $pipeline_name"
+          echo "Created trigger: $trigger_name"
         done
-    # - name: Deploy Data Factory Dataflows
-    #   run: |
-    #     pwd
-    #     ls -lrta
-    #     for file in ADF-SALLY/dataflow/*.json; do
-    #       dataflow_name=$(basename "$file" .json)
-    #       echo "Deploying dataflow $dataflow_name from $file"
-    #       properties_file="./dataflow/${dataflow_name}.json"
-    #       echo "displaying  $properties_file from $file"
-    #       az datafactory data-flow create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataflow_name" --data-flow "@$file" --properties "$properties_file" --flow-type "Flowlet" --allow-preview false
-    #     done
+
+      # Loop through trigger JSON files
+    - name: Loop through Trigger JSON files
+      run: |
+        for filename in ./trigger/*.json; do
+          trigger_name="${filename##*/}"
+          trigger_name="${trigger_name%.*}"  # Extract name from filename
+
+          # Read trigger JSON content and format it as a JSON string
+          trigger_properties=$(jq -c '.properties' "$filename")
           
-    # - name: Deploy Data Factory Datasets
-    #   run: |
-    #     for file in ./dataset/*.json; do
-    #       dataset_name=$(basename "$file" .json)
-    #       echo "Deploying dataset $dataset_name from $file"
-    #       az datafactory dataset create --resource-group cw-mobile-rg --factory-name sally-tie-out-reporting-poc --name "$dataset_name" --dataset "@$file"
-    #     done
+          # Check if trigger definition is empty
+          if [[ -z "$trigger_properties" ]]; then
+            echo "Error: Empty trigger definition in file: $filename"
+            continue  # Skip to the next iteration
+          fi
 
-    # - name: Deploy Data Factory Linked Services
-    #   run: |
-    #     for file in ADF-SALLY/linkedservices/*.json; do
-    #       linkedservice_name=$(basename "$file" .json)
-    #       echo "Deploying linked service $linkedservice_name from $file"
-    #       az datafactory linked-service create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$linkedservice_name" --linked-service "@$file"
-    #     done
+          echo "Deploying trigger $trigger_name from $filename"
 
-    # - name: Deploy Data Factory Pipelines
-    #   run: |
-    #     for file in ADF-SALLY/pipelines/*.json; do
-    #       pipeline_name=$(basename "$file" .json)
-    #       echo "Deploying pipeline $pipeline_name from $file"
-    #       az datafactory pipeline create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$pipeline_name" --pipeline "@$file"
-    #     done
+          # Create ADF trigger using az command
+          az datafactory trigger create \
+            --factory-name "sally-tie-out-reporting-poc" \
+            --resource-group "cw-mobile-rg" \
+              --name "$trigger_name" \
+              --properties "$trigger_properties" \
+              --verbose
 
-    # - name: Deploy Data Factory Triggers
-    #   run: |
-    #     for file in ADF-SALLY/triggers/*.json; do
-    #       trigger_name=$(basename "$file" .json)
-    #       echo "Deploying trigger $trigger_name from $file"
-    #       az datafactory trigger create --resource-group $AZURE_RESOURCE_GROUP --factory-name $AZURE_DATA_FACTORY_NAME --name "$trigger_name" --trigger "@$file"
-    #     done
+          echo "Created trigger: $trigger_name"
+        done
