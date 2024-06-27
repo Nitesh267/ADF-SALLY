@@ -1,12 +1,12 @@
 {
-	"name": "DF_ISRS_BSG_IA",
+	"name": "DF_ISRS_BSG_IA_TEST",
 	"properties": {
 		"type": "MappingDataFlow",
 		"typeProperties": {
 			"sources": [
 				{
 					"dataset": {
-						"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN",
+						"referenceName": "DS_ABLB_IP_ISRS_SLY_DYN_TEST",
 						"type": "DatasetReference"
 					},
 					"name": "Source"
@@ -15,7 +15,7 @@
 			"sinks": [
 				{
 					"dataset": {
-						"referenceName": "DS_ASQL_OP_ISRS",
+						"referenceName": "DS_ASQL_OP_ISRS_TEST",
 						"type": "DatasetReference"
 					},
 					"name": "Sink"
