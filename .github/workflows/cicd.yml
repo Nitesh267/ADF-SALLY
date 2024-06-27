@@ -74,7 +74,7 @@ jobs:
 
     - name: Deploy Data Factory Datasets
       run: |
-          for filename in ./datasets/*.json; do
+          for filename in ./dataset/*.json; do
             dataset_name="${filename##*/}"
             dataset_name="${dataset_name%.*}"  # Extract name from filename
       
