@@ -1,5 +1,5 @@
 {
-	"name": "DS_ABLB_ARCH",
+	"name": "DS_ABLB_ARCH_TEST",
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "AzureBlobStorage12",
