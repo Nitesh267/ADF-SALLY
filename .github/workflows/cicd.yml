@@ -83,7 +83,8 @@ jobs:
         # Read linked service JSON content
         linked_service_properties=$(cat "$filename")
 
-        echo "$filename"
+        cat "$filename"
+
 
         echo "Created linked service: $linked_service_name"
 
