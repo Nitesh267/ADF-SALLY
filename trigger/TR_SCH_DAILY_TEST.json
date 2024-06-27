@@ -1,12 +1,12 @@
 {
-	"name": "TR_SCH_DAILY1",
+	"name": "TR_SCH_DAILY_TEST",
 	"properties": {
 		"annotations": [],
 		"runtimeState": "Started",
 		"pipelines": [
 			{
 				"pipelineReference": {
-					"referenceName": "PL_TRANS_ISRS_IA",
+					"referenceName": "PL_TRANS_ISRS_IA_TEST",
 					"type": "PipelineReference"
 				}
 			}
