@@ -2,7 +2,7 @@
 	"name": "DS_ABLB_ARCH",
 	"properties": {
 		"linkedServiceName": {
-			"referenceName": "AzureBlobStorage1",
+			"referenceName": "AzureBlobStorage12",
 			"type": "LinkedServiceReference"
 		},
 		"annotations": [],
