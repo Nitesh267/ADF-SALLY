@@ -152,8 +152,8 @@ jobs:
           linked_service_name="${filename##*/}"
           linked_service_name="${linked_service_name%.*}"  # Extract name from filename
           
-          # Read linked service JSON content and format it as a JSON string
-          linked_service_properties=$(jq -c '.' "$filename")
+          # Extract properties part from linked service JSON content
+          linked_service_properties=$(jq -c '.properties' "$filename")
 
           echo "Deploying linked service $linked_service_name from $filename"
 
