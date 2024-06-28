@@ -1,0 +1,16 @@
+{
+	"name": "DS_SQL_OP_XSTR",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "ls_sql_out",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "TRN_XSTORE_CNT"
+		}
+	}
+}
