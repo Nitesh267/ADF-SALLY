@@ -3,7 +3,7 @@ name: Deploy Azure Data Factory
 on:
   push:
     branches:
-      - AmainDF
+      - ADF
 
 jobs:
   deploy:
