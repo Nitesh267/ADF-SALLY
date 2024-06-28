@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - ADF
+      - main
 
 jobs:
   deploy:
