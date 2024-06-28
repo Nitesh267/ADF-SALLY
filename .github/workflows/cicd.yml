@@ -3,7 +3,7 @@ name: Deploy Azure Data Factory
 on:
   push:
     branches:
-      - ADF
+      - AmainDF
 
 jobs:
   deploy:
@@ -179,59 +179,59 @@ jobs:
 
     
 # Loop through trigger JSON files
-    - name: Loop through Trigger JSON files
-      run: |
-        for filename in ./trigger/*.json; do
-          trigger_name="${filename##*/}"
-          trigger_name="${trigger_name%.*}"  # Extract name from filename
+    # - name: Loop through Trigger JSON files
+    #   run: |
+    #     for filename in ./trigger/*.json; do
+    #       trigger_name="${filename##*/}"
+    #       trigger_name="${trigger_name%.*}"  # Extract name from filename
 
-          # Read trigger JSON content and format it as a JSON string
-          trigger_properties=$(jq -c '.properties' "$filename")
+    #       # Read trigger JSON content and format it as a JSON string
+    #       trigger_properties=$(jq -c '.properties' "$filename")
           
-          # Check if trigger definition is empty
-          if [[ -z "$trigger_properties" ]]; then
-            echo "Error: Empty trigger definition in file: $filename"
-            continue  # Skip to the next iteration
-          fi
+    #       # Check if trigger definition is empty
+    #       if [[ -z "$trigger_properties" ]]; then
+    #         echo "Error: Empty trigger definition in file: $filename"
+    #         continue  # Skip to the next iteration
+    #       fi
 
-          echo "Deploying trigger $trigger_name from $filename"
+    #       echo "Deploying trigger $trigger_name from $filename"
 
-          # Create ADF trigger using az command
-          az datafactory trigger create \
-            --factory-name "sally-tie-out-reporting-poc" \
-            --resource-group "cw-mobile-rg" \
-              --name "$trigger_name" \
-              --properties "$trigger_properties" \
-              --verbose
+    #       # Create ADF trigger using az command
+    #       az datafactory trigger create \
+    #         --factory-name "sally-tie-out-reporting-poc" \
+    #         --resource-group "cw-mobile-rg" \
+    #           --name "$trigger_name" \
+    #           --properties "$trigger_properties" \
+    #           --verbose
 
-          echo "Created trigger: $trigger_name"
-        done
+    #       echo "Created trigger: $trigger_name"
+    #     done
 
       # Loop through trigger JSON files
-    - name: Loop through Trigger JSON files
-      run: |
-        for filename in ./trigger/*.json; do
-          trigger_name="${filename##*/}"
-          trigger_name="${trigger_name%.*}"  # Extract name from filename
+    # - name: Loop through Trigger JSON files
+    #   run: |
+    #     for filename in ./trigger/*.json; do
+    #       trigger_name="${filename##*/}"
+    #       trigger_name="${trigger_name%.*}"  # Extract name from filename
 
-          # Read trigger JSON content and format it as a JSON string
-          trigger_properties=$(jq -c '.properties' "$filename")
+    #       # Read trigger JSON content and format it as a JSON string
+    #       trigger_properties=$(jq -c '.properties' "$filename")
           
-          # Check if trigger definition is empty
-          if [[ -z "$trigger_properties" ]]; then
-            echo "Error: Empty trigger definition in file: $filename"
-            continue  # Skip to the next iteration
-          fi
+    #       # Check if trigger definition is empty
+    #       if [[ -z "$trigger_properties" ]]; then
+    #         echo "Error: Empty trigger definition in file: $filename"
+    #         continue  # Skip to the next iteration
+    #       fi
 
-          echo "Deploying trigger $trigger_name from $filename"
+    #       echo "Deploying trigger $trigger_name from $filename"
 
-          # Create ADF trigger using az command
-          az datafactory trigger create \
-            --factory-name "sally-tie-out-reporting-poc" \
-            --resource-group "cw-mobile-rg" \
-              --name "$trigger_name" \
-              --properties "$trigger_properties" \
-              --verbose
+    #       # Create ADF trigger using az command
+        #   az datafactory trigger create \
+        #     --factory-name "sally-tie-out-reporting-poc" \
+        #     --resource-group "cw-mobile-rg" \
+        #       --name "$trigger_name" \
+        #       --properties "$trigger_properties" \
+        #       --verbose
 
-          echo "Created trigger: $trigger_name"
-        done
+        #   echo "Created trigger: $trigger_name"
+        # done
