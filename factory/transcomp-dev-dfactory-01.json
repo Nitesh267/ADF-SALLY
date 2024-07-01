@@ -1,0 +1,9 @@
+{
+	"name": "sally-tie-out-reporting-poc",
+	"location": "southcentralus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "f03d7700-f03b-4c6f-8c2c-df530c1180fa",
+		"tenantId": "bcb8d9e6-bd28-46c7-88fd-3a30ac376a2c"
+	}
+}

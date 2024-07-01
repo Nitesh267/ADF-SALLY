@@ -1,0 +1,279 @@
+---
+name: 'QA - Azure Data Factory Export & Deploy'
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: "OPTIONAL: Input a DEV or SIT Tag name to deploy to QA (e.g. 'dev-3' or 't-gh-sit-5')"
+        required: false
+
+env:
+  name_prefix: transcomp
+  qa_resource_group_name: transcomp-qa-scus-rg-01
+  qa_data_factory_name: transcomp-qa-dfactory-01
+  dev_data_factory_name: transcomp-dev-dfactory-01
+  ASSET_LABEL: transcomp-data-factory.zip
+  parameters_files_dir: arm-template-parameters-files
+  qa_parameters_file: qa-arm-template-parameters.json
+  prod_parameters_file: prod-arm-template-parameters.json
+  exported_parameters_file_name: 'ARMTemplateParametersForFactory.json'
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-22.04
+    outputs:
+      deploymentArtifact: ${{ env.deploymentArtifact }}
+      releaseArtifact: ${{ env.releaseArtifact }}
+      sha: ${{ env.sha }}
+    steps:
+      # Extract Branch Name
+      # includes Bash for manipulating a string (${var#string})
+      # base_ref is populated for Pull Requests (target branch)
+      - name: Extract branch name
+        run: |
+          if [[ ${GITHUB_EVENT_NAME} == pull_request ]]; then
+            echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
+          else
+            echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          fi
+      
+      # If manually triggered, ensure the source branch is main. Otherwise, abort.
+      - name: Validate correct branch for workflow dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ "${BRANCH}" != @("main") ]]; then
+            echo "::error::This workflow should only be manually triggered from the main branch. It was triggered from the ${BRANCH} branch. Aborting..."
+            exit 1
+          fi
+      
+      - name: Annotate User who Triggered Workflow
+        run: |
+          echo "::notice::Workflow triggered by ${{ github.event.sender.login }}."
+      
+      # If manually triggered, ensure the tag name is in the format t-gh-dev-{workflow_number}
+      - name: Validate Input
+        if: ${{ github.event.inputs.tag_name }}
+        run: |
+          if ! [[ "${{ github.event.inputs.tag_name }}" =~ ^t-gh- ]]; then
+            ref="t-gh-${{ github.event.inputs.tag_name }}"
+          else 
+            ref="${{ github.event.inputs.tag_name }}"
+          fi
+
+          echo "ref=${ref}" >> $GITHUB_ENV
+
+          if ! [[ "${ref}" =~ ^t-gh-dev-[0-9]+$ || "${ref}" =~ ^t-gh-sit-[0-9]+$ ]]; then
+            echo "::error::Your input \"${{ github.event.inputs.tag_name }}\" is invalid. Please enter a DEV or SIT Tag name (e.g. 'dev-3' or 't-gh-sit-5')."
+            exit 1
+          fi
+
+          echo "::notice::Deploying code from '${ref}' to QA."
+
+      # Determines what ref to checkout (workflow dispatch input vs sha that triggered workflow)
+      - name: Set Ref If Not Provided
+        if: ${{ ! github.event.inputs.tag_name }}
+        run: |
+            echo "ref=${GITHUB_SHA}" >> $GITHUB_ENV
+            echo "::notice::Deploying code from main branch to QA."
+
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ env.ref }}
+
+      # Store sha of ref as environment variable to pass to Tag & Release job
+      - name: Store commit sha as environment variable
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Get Azure Subscription ID
+        shell: pwsh # PowerShell
+        run: |
+          # Make the subscription ID available as a masked variable.
+          $secrets = ${{ secrets.AZURE_SECRETS }} | ConvertFrom-StringData
+          $sub_id=$secrets.subscriptionid_nprd.trim('"')
+          echo "::add-mask::$sub_id"
+          echo "SUBSCRIPTION_ID=$sub_id >> $ENV:GITHUB_ENV"
+
+      # This step is explained in the script file - .github/scripts/GitHub_App_Access_Token.sh
+      - name: Get Installation Token for GH App
+        id: get_token
+        env:
+          ALVIN_PEM: ${{ secrets.ALVIN_PEM }}
+          ALVIN_APP_ID: ${{ secrets.ALVIN_APP_ID }}
+          ALVIN_INSTALLATION_ID: ${{ secrets.ALVIN_INSTALLATION_ID }}
+        run: |
+          chmod +x ./.github/scripts/GitHub_App_Access_Token.sh && ./.github/scripts/GitHub_App_Access_Token.sh
+
+      # Checkout Sally's private Azure Data Factory Export Action action
+      - name: Checkout Azure Data Factory Export Action
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.get_token.outputs.token }}
+          repository: sallybeautyholdings/data-factory-export-action
+          path: ./.github/actions/data-factory-export-action
+
+      # Even though this is the QA deploy workflow, we need to export the DEV data factory
+      # We'll replace the DEV parameters file with the QA one later in the workflow, but the ARM template is identical
+      - name: Export Dev ARM Template
+        id: export
+        # uses: Azure/data-factory-export-action@v1.2.0
+        uses: ./.github/actions/data-factory-export-action
+        with:
+          id: '/subscriptions/${{ env.SUBSCRIPTION_ID }}/resourceGroups/${{ env.dev_resource_group_name }}/providers/Microsoft.DataFactory/factories/${{ env.dev_data_factory_name }}'
+
+      - name: Remove Default Values From ARM Templates
+        run: |
+          # The export runs in a container, so all the generated files and folders are owned by root. 
+          # We change their owner:group to be the github-actions runner user and its primary group
+          sudo chown -R $USER:$(id -gn $USER) .
+
+          cd ${{ steps.export.outputs.arm-template-directory }}
+
+          # Find all files that include the string '"defaultValue":' and put them into an array
+          # "IFS=$'n'" at the front forces splitting at new lines. This allows for the possibility of file names with spaces in them.
+          IFS=$'\n' templates=($(grep -rl '"defaultValue":' .))
+          
+          cd ..
+
+          # Remove the leading './' from grep's output for each item in the array
+          templates=(${templates#./})
+          
+          # Remove defaultValue property from all parameters in ARM templates
+          # jq doesn't seem to allow in-place editing, so we write to a temporary file, then mv that file to the export directory
+          for template in "${templates[@]}"; do
+            jq 'del(.parameters[].defaultValue)' "${{ steps.export.outputs.arm-template-directory }}/${template}" > "${template#linkedTemplates/}"
+            mv "${template#linkedTemplates/}" "${{ steps.export.outputs.arm-template-directory }}/${template}"
+          done
+
+          echo "Default Values removed."
+
+      # Replace the DEV parameters file with the QA parameters file from the repo
+      - name: Add QA Parameters File
+        run: |
+          mv ${{ github.workspace }}/${{ env.parameters_files_dir}}/${{ env.qa_parameters_file }} ${{ steps.export.outputs.arm-template-directory }}/${{ env.qa_parameters_file }}
+          rm -f ${{ steps.export.outputs.arm-template-directory }}/${{ env.exported_parameters_file_name }}
+
+      # Compress the ARM template dir with the QA parameters file to deploy to QA, then again with the PROD parameters file to add as a release asset
+      # The release asset will eventually be deployed to PROD in the prod_deploy.yml workflow
+      - name: Label & Zip ARM Template Files
+        run: |
+          # Generate Deployment Artifact needed for the "Azure/data-factory-deploy-action" GitHub action
+          deploymentArtifact="${name_prefix}-data-factory-qa-deployment_build-${GITHUB_RUN_NUMBER}.zip"
+          echo "deploymentArtifact=${deploymentArtifact}" >> $GITHUB_ENV
+          
+          cd ${{ steps.export.outputs.arm-template-directory }}
+          zip -r ../${deploymentArtifact} .
+          cd ..
+          
+          # Generate Release Artifact needed for the "ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5 #v1.14.0
+          releaseArtifact="${name_prefix}-data-factory-qa-release_build-${GITHUB_RUN_NUMBER}.zip"
+          echo "releaseArtifact=${releaseArtifact}" >> $GITHUB_ENV
+          
+          mv ${{ github.workspace }}/${{ env.parameters_files_dir}}/${{ env.prod_parameters_file }} ${{ steps.export.outputs.arm-template-directory }}/${{ env.prod_parameters_file }}
+          cd ${{ steps.export.outputs.arm-template-directory }}
+          rm -f ${{ env.qa_parameters_file }}
+          zip -r ../${releaseArtifact} .
+          cd ..
+
+      # Upload QA artifact
+      - name: Upload Deployment Artifact
+        uses: actions/upload-artifact@v4
+        with: 
+          name: ${{ env.deploymentArtifact }}
+          # The configured 'path' uploads a zip file containing the individual files/folders from the ARM Template File directory
+          # This is the format that the "Azure/data-factory-deploy-action" GitHub action expects
+          path: ${{ env.deploymentArtifact }}
+          if-no-files-found: error
+
+      # Upload PROD artifact
+      - name: Upload Release Artifact
+        uses: actions/upload-artifact@v4
+        with: 
+          name: ${{ env.releaseArtifact }}
+          # The configured 'path' uploads a zip file containing a zip file containing the individual files/folders from the ARM Template File directory
+          # This is the format (single file) that the "ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5 #v1.14.0
+          path: ${{ env.releaseArtifact }}
+          if-no-files-found: error
+
+######################################################################################################################################
+######################################################################################################################################
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-22.04
+    needs: [build]
+    environment: qa
+    steps:
+      - name: Download Deployment Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.deploymentArtifact }}
+
+      - name: Unzip Artifact
+        run: |
+          unzip ${{ needs.build.outputs.deploymentArtifact }}
+
+      - name: Login via Az module
+        uses: azure/login@v1.4.6
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_NPROD_GITHUB }}
+          enable-AzPSSession: true
+
+      - name: Deploy Data Factory Resources
+        uses: Azure/data-factory-deploy-action@v1.2.0
+        with:
+          resourceGroupName: ${{ env.qa_resource_group_name }}
+          dataFactoryName: ${{ env.qa_data_factory_name }}
+          armTemplateFile: ARMTemplateForFactory.json
+          armTemplateParametersFile: ${{ env.qa_parameters_file }}
+
+  # ######################################################################################################################################
+  # ######################################################################################################################################
+
+  tag_and_draft_qa_pre-release:
+    name: Tag and Draft QA Pre-Release
+    runs-on: ubuntu-22.04
+    needs: [build, deploy]
+    steps:
+      
+      # Download artifact that was uploaded in deploy job
+      - uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.build.outputs.releaseArtifact }}
+
+      # Tag the commit that deployed artifact. Create a release from that tag.
+      # Upload the artifact as a Release Asset
+      - name: Tag and Release QA
+        uses: ncipollo/release-action@2c591bcc8ecdcd2db72b97d6147f871fcd833ba5 #v1.14.0
+        id: create_release
+        with:
+          artifacts: "${{ needs.build.outputs.releaseArtifact }}"
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit: ${{ needs.build.outputs.sha }}
+          prerelease: true
+          tag: t-gh-qa-${{ github.run_number }}
+          name: qa-${{ github.run_number }}
+          artifactErrorsFailBuild: true
+
+      # Give the Release Asset a consistent label (The $ASSET_LABEL workflow variable at the top of this workflow file.)
+      - name: Label the Release Asset
+        run: |
+          base_url="https://api.github.com/repos/${{ github.repository }}"
+          endpoint="/releases/${{ steps.create_release.outputs.id }}"
+          accept="Accept: application/vnd.github.v3+json"
+          authorization="Authorization: token ${{ github.token }}"
+          request=$(curl -s --request GET \
+          --url "${base_url}${endpoint}" \
+          -H "${accept}" \
+          -H "${authorization}")
+          asset_URL=$(jq -r ".assets[] | select(.name == \"${{ needs.build.outputs.releaseArtifact }}\") | .url" <<< ${request})
+          curl -X PATCH \
+          -H "${accept}" \
+          -H "${authorization}" \
+          "${asset_URL}" \
+          -d '{"label":"${{ env.ASSET_LABEL }}"}'
+          echo "::notice::The pre-release for ${GITHUB_REF#refs/heads/} build ${{ github.run_number }} can be found at ${{ steps.create_release.outputs.html_url }}"

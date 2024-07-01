@@ -1,0 +1,255 @@
+---
+name: 'DEV - Export Parameters File and Tag Commit'
+
+on:
+  push:
+    branches:
+      - "main"
+    paths-ignore:
+      - '.github/**'
+      - 'arm-template-parameters-files/**'
+  workflow_dispatch:
+    inputs:
+      deploy_to_dev:
+        description: Set to 'true' to force a deployment to the DEV environment.
+        default: 'false'
+        required: false
+
+env:
+  name_prefix: 'transcomp'
+  resource_group_name: 'cw-mobile-rg'
+  data_factory_name: 'sally-tie-out-reporting-poc'
+  exported_parameters_file_name: 'ARMTemplateParametersForFactory.json'
+  parameters_files_dir: './arm-template-parameters-files'
+  dev_parameters_file: 'dev-arm-template-parameters.json'
+
+jobs:
+  export:
+    name: Export Dev Parameters File
+    runs-on: ubuntu-22.04
+    outputs:
+      artifact: ${{ env.artifact }}
+      BRANCH: ${{ env.BRANCH }}
+      sha: ${{ env.sha }}
+    steps:
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Extract Branch Name
+      # includes Bash for manipulating a string (${var#string})
+      # base_ref is populated for Pull Requests (target branch)
+      - name: Extract branch name
+        run: |
+          if [[ ${GITHUB_EVENT_NAME} == pull_request ]]; then
+            echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
+          else
+            echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          fi
+
+      # If manually triggred with "deploy_to_dev" set to true, ensure the source branch is main. Otherwise, abort.
+      - name: Validate correct branch for workflow dispatch
+        if: github.event.inputs.deploy_to_dev == 'true'
+        run: |
+          if [[ "${BRANCH}" != @("main") ]]; then
+            echo "::error::This deploy job should only be manually triggered from the main branch. It was triggered from the ${BRANCH} branch. Aborting..."
+            exit 1
+          fi
+
+      # This step is explained in the script file - .github/scripts/GitHub_App_Access_Token.sh
+      - name: Get Installation Token for GH App
+        id: get_token
+        env:
+          ALVIN_PEM: ${{ secrets.ALVIN_PEM }}
+          ALVIN_APP_ID: ${{ secrets.ALVIN_APP_ID }}
+          ALVIN_INSTALLATION_ID: ${{ secrets.ALVIN_INSTALLATION_ID }}
+        run: |
+          chmod +x ./.github/scripts/GitHub_App_Access_Token.sh && ./.github/scripts/GitHub_App_Access_Token.sh
+
+      - name: Get Azure Subscription ID
+        shell: pwsh # PowerShell
+        run: |
+          # Make the subscription ID available as a masked variable.
+          $secrets = ${{ secrets.AZURE_SECRETS }} | ConvertFrom-StringData
+          $sub_id=$secrets.subscriptionid_nprd.trim('"')
+          # echo "::add-mask::$sub_id"
+          echo "SUBSCRIPTION_ID=$sub_id >> $ENV:GITHUB_ENV"
+
+      # Checkout Sally's private Azure Data Factory Export Action action
+      # This is a copy of the azure/data-factory-export-action (https://github.com/Azure/data-factory-export-action) with error handling in case validation fails
+      # The original has no error handling, so even complete failure reports this step as successful
+      # I've opened an issue in Azure's repo to get this corrected
+      - name: Checkout Azure Data Factory Export Action
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.get_token.outputs.token }}
+          repository: sallybeautyholdings/data-factory-export-action
+          path: ./.github/actions/data-factory-export-action
+
+      # env.data_factory_name must match the file name in the ./factory directory in the root of the repo to export Global Parameters
+      - name: Export Dev ARM Template
+        id: export
+        # uses: Azure/data-factory-export-action@v1.2.0
+        uses: ./.github/actions/data-factory-export-action
+        with:
+          id: '/subscriptions/${{ env.SUBSCRIPTION_ID }}/resourceGroups/${{ env.resource_group_name }}/providers/Microsoft.DataFactory/factories/${{ env.data_factory_name }}'
+
+      # To ensure we don't send DEV's default parameter values to QA or PROD, we remove them entirely from the exported ARM Templates
+      # The ARM Templates generated in the linkedTemplates directory don't seem to be used, but we remove their defaultValues as well in case we've missed something
+      - name: Remove Default Values From ARM Templates
+        run: |
+          # The export runs in a container, so all the generated files and folders are owned by root. 
+          # We change their owner:group to be the github-actions runner user and its primary group
+          sudo chown -R $USER:$(id -gn $USER) .
+
+          cd ${{ steps.export.outputs.arm-template-directory }}
+
+          # Find all files that include the string '"defaultValue":' and put them into an array
+          # "IFS=$'n'" at the front forces splitting at new lines. This allows for the possibility of file names with spaces in them.
+          IFS=$'\n' templates=($(grep -rl '"defaultValue":' .))
+          
+          cd ..
+
+          # Remove the leading './' from grep's output for each item in the array
+          templates=(${templates#./})
+          
+          # Remove defaultValue property from all parameters in ARM templates
+          # jq doesn't seem to allow in-place editing, so we write to a temporary file, then mv that file to the export directory
+          for template in "${templates[@]}"; do
+            jq 'del(.parameters[].defaultValue)' "${{ steps.export.outputs.arm-template-directory }}/${template}" > "${template#linkedTemplates/}"
+            mv "${template#linkedTemplates/}" "${{ steps.export.outputs.arm-template-directory }}/${template}"
+          done
+
+          echo "artifact=${name_prefix}-data-factory_dev_build-${{ github.run_number }}" >> $GITHUB_ENV
+
+          echo "Default Values removed."
+
+      # There is a bug in the export that duplicates the open square bracket character if it is the first character of a parameter
+      # We confirmed this happens in both the data-factory-export-action and in the data factory UI
+      # This commit demonstrates the problem: https://github.com/sallybeautyholdings/epint-pact-azure-data-factory/commit/3af0f820e62d2b111d52d6962c43ce3bc575deb0
+      # In the Data Factory, "default_properties_StoredProcedure_step1_value" is defined as "[dbo].[USP_GET_PMM_PROCESS_CHANGE_STEP1]"
+      # # but the export duplicates the first square bracket
+      # This step finds "[[" at the beginning of a parameter value and replaces it with "["
+      - name: Remove Duplicate Square Brackets In Parameters
+        run: |
+          sed -i 's/\("value": "\[\)\[/\1/' ${{ steps.export.outputs.arm-template-directory }}/${{ env.exported_parameters_file_name }}
+
+      # Check for changes between the exported parameters file and the last version of it. 
+      # If they are different, set "new_parameters_file" to true to trigger pushing the new version to the repo.
+      - name: Check For Changes In Parameters File
+        run: |
+          mv ${{ steps.export.outputs.arm-template-directory }}/${{ env.exported_parameters_file_name }} ${{ steps.export.outputs.arm-template-directory }}/${{ env.dev_parameters_file }}
+
+          if [[ -n $(diff ${{ steps.export.outputs.arm-template-directory }}/${{ env.dev_parameters_file }}  ${{ env.parameters_files_dir }}/${{ env.dev_parameters_file }}) ]]; then 
+            mv ${{ steps.export.outputs.arm-template-directory }}/${{ env.dev_parameters_file }} ${{ env.parameters_files_dir }}/${{ env.dev_parameters_file }}
+            echo "new_parameters_file=true" >> $GITHUB_ENV
+            echo "::warning::New parameters file detected. Pushing the changes to the repo..."
+          else
+            echo "::notice::No changes found in parameters file."
+          fi
+
+      # If there are changes in the exported parameters file, push the new file to the repo
+      - name: Push New ARM Templates to Repo
+        if: ${{ env.new_parameters_file }}
+        run: |
+          # git config user.name and user.email are required to push changes
+          # The git config --local steps are to push to the repo as our GitHub app, AL.v1n
+          # We've allowed AL.v1n to bypass the branch restrictions that prevent committing to main without a pull request
+          git config user.name sbh-automation
+          git config user.email sbh-automation@sallybeauty.com
+          git config --local --unset-all http.https://github.com/.extraheader
+          git config --local url."https://x-access-token:${{ steps.get_token.outputs.token }}@github.com".insteadOf "https://github.com"
+
+          git add ${{ env.parameters_files_dir }}/${{ env.dev_parameters_file }}
+          git commit -m "Update DEV Parameters File from run ${{ github.run_number }}"
+          git push
+
+      # Store sha of ref as environment variable to pass to Tag & Release job
+      - name: Capture New Commit SHA
+        if: ${{ env.new_parameters_file }}
+        run: |
+          echo "sha=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Upload Artifact
+        if: ${{ env.BRANCH == 'main' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.artifact }}
+          path: ${{ steps.export.outputs.arm-template-directory }}
+          if-no-files-found: error
+
+  ######################################################################################################################################
+  ######################################################################################################################################
+
+  # If on the main branch, tag the commit that generated this artifact
+  tag:
+    name: Tag Commit If Main Branch
+    if: needs.export.outputs.BRANCH == 'main'
+    needs: export
+    runs-on: ubuntu-22.04
+    steps:
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.export.outputs.sha }}
+
+      # This step is explained in the script file - .github/scripts/GitHub_App_Access_Token.sh
+      - name: Get Installation Token for GH App
+        id: get_token
+        env:
+          ALVIN_PEM: ${{ secrets.ALVIN_PEM }}
+          ALVIN_APP_ID: ${{ secrets.ALVIN_APP_ID }}
+          ALVIN_INSTALLATION_ID: ${{ secrets.ALVIN_INSTALLATION_ID }}
+        run: |
+          chmod +x ./.github/scripts/GitHub_App_Access_Token.sh && ./.github/scripts/GitHub_App_Access_Token.sh
+      
+      - name: Tag Commit
+        run: |
+          # git config user.name and user.email are required to push changes
+          # The git config --local steps are to push to the repo as our GitHub app, AL.v1n
+          # We've allowed AL.v1n to bypass the branch restrictions that prevent committing to main without a pull request
+          git config user.name sbh-automation
+          git config user.email sbh-automation@sallybeauty.com
+          git config --local --unset-all http.https://github.com/.extraheader
+          git config --local url."https://x-access-token:${{ steps.get_token.outputs.token }}@github.com".insteadOf "https://github.com"
+
+          tag_name="t-gh-dev-${{ github.run_number }}"
+
+          git tag ${tag_name}
+          git push origin ${tag_name}
+
+          echo "::notice::The tag for this build is '${tag_name}' and can be viewed here: https://github.com/${{ github.repository}}/releases/tag/${tag_name}"
+
+
+  ######################################################################################################################################
+  ######################################################################################################################################
+  
+  # This job overwrites what shows in Data Factory Studio Live Mode
+  # I don't fully understand the use-case for Live Mode when connected to a repo, but if it's necessary to sync it to main at some point, this code will handle that. 
+  deploy:
+    name: Optional - Deploy to DEV
+    # Only run if this was triggered from the main branch and "deploy_to_dev" is set to true
+    if: github.event.inputs.deploy_to_dev  == 'true' && needs.export.outputs.BRANCH == 'main'
+    needs: export
+    runs-on: ubuntu-22.04
+    environment: dev
+    steps:
+      - name: Download Deployment Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ needs.export.outputs.artifact }}
+
+      - name: Login via Az module
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_NPROD_GITHUB }}
+          enable-AzPSSession: true
+
+      - name: Deploy Data Factory Resources
+        uses: azure/data-factory-deploy-action@v1.2.0
+        with:
+          resourceGroupName: ${{ env.resource_group_name }}
+          dataFactoryName: ${{ env.data_factory_name }}
+          armTemplateFile: ARMTemplateForFactory.json
+          armTemplateParametersFile: ${{ env.dev_parameters_file }}

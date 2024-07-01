@@ -1,0 +1,57 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "factoryName": {
+            "value": "sally-tie-out-reporting-poc"
+        },
+        "ir-self-hosted-linked-01_properties_typeProperties_linkedInfo_resourceId": {
+            "value": "/subscriptions/0eb16af5-8c5c-42f6-85cb-65f4f74714ce/resourcegroups/sally-tie-out-reporting-poc/providers/Microsoft.DataFactory/factories/sally-tie-out-reporting-poc/integrationruntimes/integrationRuntime"
+        }
+        // ,        
+        // "key-vault-vault-privateendpoint_properties_privateLinkResourceId": {
+        //     "value": "/subscriptions/be09d45e-9b6c-454a-a3d2-9bc966af6b0a/resourceGroups/vault-nprod-scus-rg-01/providers/Microsoft.KeyVault/vaults/transcomp-dev-vault-01"
+        // },
+        // "key-vault-vault-privateendpoint_properties_groupId": {
+        //     "value": "vault"
+        // },
+        // "key-vault-vault-privateendpoint_properties_fqdns": {
+        //     "value": [
+        //         "transcomp-dev-vault-01.vault.azure.net"
+        //     ]
+        // },
+        // "sql-server-sqlserver-privateendpoint_properties_privateLinkResourceId": {
+        //     "value": "/subscriptions/be09d45e-9b6c-454a-a3d2-9bc966af6b0a/resourceGroups/transcomp-dev-scus-rg-01/providers/Microsoft.Sql/servers/transcompdevsqlpaas01"
+        // },
+        // "sql-server-sqlserver-privateendpoint_properties_groupId": {
+        //     "value": "sqlServer"
+        // },
+        // "sql-server-sqlserver-privateendpoint_properties_fqdns": {
+        //     "value": [
+        //         "transcompdevsqlpaas01.database.windows.net"
+        //     ]
+        // },
+        // "storage-account-blob-privateendpoint_properties_privateLinkResourceId": {
+        //     "value": "/subscriptions/be09d45e-9b6c-454a-a3d2-9bc966af6b0a/resourceGroups/transcomp-dev-scus-rg-01/providers/Microsoft.Storage/storageAccounts/transcompdevstorage01"
+        // },
+        // "storage-account-blob-privateendpoint_properties_groupId": {
+        //     "value": "blob"
+        // },
+        // "storage-account-blob-privateendpoint_properties_fqdns": {
+        //     "value": [
+        //         "transcompdevstorage01.blob.core.windows.net"
+        //     ]
+        // },
+        // "storage-account-file-privateendpoint_properties_privateLinkResourceId": {
+        //     "value": "/subscriptions/be09d45e-9b6c-454a-a3d2-9bc966af6b0a/resourceGroups/transcomp-dev-scus-rg-01/providers/Microsoft.Storage/storageAccounts/transcompdevstorage01"
+        // },
+        // "storage-account-file-privateendpoint_properties_groupId": {
+        //     "value": "file"
+        // },
+        // "storage-account-file-privateendpoint_properties_fqdns": {
+        //     "value": [
+        //         "transcompdevstorage01.file.core.windows.net"
+        //     ]
+        // }
+    }
+}

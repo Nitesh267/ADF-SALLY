@@ -1,0 +1,140 @@
+---
+name: 'PROD - Azure Data Factory Deploy'
+
+on:
+  release:
+    types: [released]
+  workflow_dispatch:
+    inputs:
+      release_ver:
+        description: Input the Release name to deploy to Prod (e.g qa-3)
+        required: true
+
+env:
+  prod_resource_group_name: transcomp-prod-scus-rg-01
+  prod_data_factory_name: transcomp-prod-dfactory-01
+  asset_label: transcomp-data-factory.zip
+  main_branch: main # main is appropriate since this repo's code is tied solely to the Dev Data Factory
+  workflow_name: "QA - Azure Data Factory Export & Deploy"
+  prod_parameters_file: prod-arm-template-parameters.json
+
+jobs:
+  gatechecks:
+    name: Gatechecks
+    runs-on: ubuntu-22.04
+    outputs:
+      DOWNLOAD_URL: ${{ steps.fetch_release_asset_info.outputs.DOWNLOAD_URL }}
+      COMMIT_SHA: ${{ steps.fetch_release_asset_info.outputs.COMMIT_SHA }}
+      RELEASE_NAME: ${{ env.releaseName }}
+    steps:
+      # Extract Branch Name
+      # includes Bash for manipulating a string (${var#string})
+      # base_ref is populated for Pull Requests (target branch)
+      - name: Extract branch name
+        run: |
+          if [[ ${GITHUB_EVENT_NAME} == pull_request ]]; then
+            echo "BRANCH=${GITHUB_BASE_REF}" >> $GITHUB_ENV
+          else
+            echo "BRANCH=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+          fi
+      
+      # If manually triggered, ensure the source branch is main. Otherwise, abort.
+      - name: Validate correct branch for workflow dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [[ "${BRANCH}" != @("main") ]]; then
+            echo "::error::This workflow should only be manually triggered from the main branch. It was triggered from the ${BRANCH} branch. Aborting..."
+            exit 1
+          fi
+
+      - name: Annotate User who Triggered Workflow
+        run: |
+          echo "::notice::Workflow triggered by ${{ github.event.sender.login }}."
+      
+      # If manually triggered, ensure the release version is in the format main-{release_number}
+      - name: Validate Input
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if ! [[ ${{ github.event.inputs.release_ver }} =~ ^qa-[0-9]+$ ]]; then
+            echo "::error::Your input \"${{ github.event.inputs.release_ver }}\" is invalid. Please enter a valid Release name (e.g. main-36). "
+            exit 1
+          fi
+
+      # Define release name from either the manual input or the release name
+      - name: Define Release Name
+        run: |
+          echo "releaseName=${{ github.event.inputs.release_ver || github.event.release.name }}" >> $GITHUB_ENV
+
+      # Annotate the release name for validation
+      - name: Print input as annotation
+        run: |
+          echo "::warning::Release to deploy is \"${{ env.releaseName }}\"."
+
+      # Checkout the repository to the GitHub Actions runner
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # This step is explained in the script file - .github/scripts/GitHub_App_Access_Token.sh
+      - name: Get Installation Token for GH App
+        id: get_token
+        env:
+          ALVIN_PEM: ${{ secrets.ALVIN_PEM }}
+          ALVIN_APP_ID: ${{ secrets.ALVIN_APP_ID }}
+          ALVIN_INSTALLATION_ID: ${{ secrets.ALVIN_INSTALLATION_ID }}
+        run: |
+          chmod +x ./.github/scripts/GitHub_App_Access_Token.sh && ./.github/scripts/GitHub_App_Access_Token.sh
+
+      # Checkout Sally's private fetch-release-asset-info action
+      - name: Checkout fetch-release-asset-info action
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.get_token.outputs.token }}
+          repository: sallybeautyholdings/fetch-release-asset-info
+          path: ./.github/actions/fetch-release-asset-info
+
+      # Gate checks are described and written into the fetch-release-asset-info action
+      - name: Gate Checks
+        id: fetch_release_asset_info
+        uses: ./.github/actions/fetch-release-asset-info
+        with:
+          release_name: ${{ env.releaseName }}
+          asset_label: ${{ env.asset_label }}
+          source_branch: ${{ env.main_branch }}
+          token: ${{ github.token }}
+          workflows_to_validate: ${{ env.workflow_name }}
+
+######################################################################################################################################
+######################################################################################################################################
+
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-22.04
+    needs: [gatechecks]
+    environment:
+      name: prod
+    steps:
+      - name: Download Release Asset
+        run: |
+          curl -sLJO \
+          "${{ needs.gatechecks.outputs.DOWNLOAD_URL }}" \
+          --header "Accept: application/octet-stream" \
+          --header "Authorization: token ${{ github.token }}"
+      
+      - name: Unzip Release Asset
+        run: |
+          artifact=$(ls | grep "\.zip$")
+          unzip ${artifact}
+
+      - name: Login via Az module
+        uses: azure/login@v1.4.6
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD_GITHUB }}
+          enable-AzPSSession: true
+
+      - name: Deploy Data Factory Resources
+        uses: Azure/data-factory-deploy-action@v1.2.0
+        with:
+          resourceGroupName: ${{ env.prod_resource_group_name }}
+          dataFactoryName: ${{ env.prod_data_factory_name }}
+          armTemplateFile: ARMTemplateForFactory.json
+          armTemplateParametersFile: ${{ env.prod_parameters_file }}
